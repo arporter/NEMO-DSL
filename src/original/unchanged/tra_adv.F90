@@ -5,7 +5,7 @@
    !! ***                             IS-ENES2 - CMCC/STCF                            ***
    !!=====================================================================================
 PROGRAM tra_adv
-
+   USE dl_timer, only: timer_init, timer_register, timer_start, timer_stop, timer_report
    REAL*8, ALLOCATABLE, SAVE, DIMENSION(:,:,:,:) :: t3sn, t3ns, t3ew, t3we
    REAL*8, ALLOCATABLE, SAVE, DIMENSION(:,:,:)   :: tsn 
    REAL*8, ALLOCATABLE, SAVE, DIMENSION(:,:,:)   :: pun, pvn, pwn
@@ -14,8 +14,11 @@ PROGRAM tra_adv
    REAL*8, ALLOCATABLE, SAVE, DIMENSION(:)       :: rnfmsk_z
    REAL*8                                        :: zice, zu, z0u, zzwx, zv, z0v, zzwy, ztra, zbtr, zdt, zalpha
    REAL*8                                        :: r
-   INTEGER                                       :: jpi, jpj, jpk, it, ji, jj, jk, jt
+   INTEGER                                       :: jpi, jpj, jpk, ji, jj, jk, jt
+   INTEGER*8                                     :: it
    CHARACTER(len=10)                             :: env
+   !> Timer indexes, one for initialisation, one for the 'time-stepping'
+   INTEGER :: init_timer, step_timer
 
    CALL get_environment_variable("JPI", env)
    READ ( env, '(i10)' ) jpi
@@ -25,6 +28,16 @@ PROGRAM tra_adv
    READ ( env, '(i10)' ) jpk
    CALL get_environment_variable("IT", env)
    READ ( env, '(i10)' ) it
+
+   ! Set-up our timers
+
+   CALL timer_init()
+   CALL timer_register(init_timer, label='Initialisation')
+   CALL timer_register(step_timer, label='Time-stepping', num_repeats=it)
+
+   ! Initialisation
+
+   call timer_start(init_timer)
 
    ALLOCATE( mydomain (jpi,jpj,jpk))
    ALLOCATE( zwx (jpi,jpj,jpk))
@@ -82,16 +95,19 @@ PROGRAM tra_adv
       rnfmsk_z(jk)=jk/jpk
    END DO
 
+   call timer_stop(init_timer)
 
 !***********************
 !* Start of the synphony
 !***********************
+   call timer_start(step_timer)
+
    DO jt = 1, it
        DO jk = 1, jpk
           DO jj = 1, jpj
              DO ji = 1, jpi
-                IF( tsn(ji,jj,jk) <= ztfreez(ji,jj) + 0.1 ) THEN   ;   zice = 1.e0
-                ELSE                                               ;   zice = 0.e0
+                IF( tsn(ji,jj,jk) <= ztfreez(ji,jj) + 0.1d0 ) THEN   ;   zice = 1.d0
+                ELSE                                                 ;   zice = 0.d0
                 ENDIF
                 zind(ji,jj,jk) = MAX (   &
                    rnfmsk(ji,jj) * rnfmsk_z(jk),      & 
@@ -120,9 +136,9 @@ PROGRAM tra_adv
          DO jj = 2, jpj
             DO ji = 2, jpi 
                zslpx(ji,jj,jk) =                    ( zwx(ji,jj,jk) + zwx(ji-1,jj  ,jk) )   &
-               &            * ( 0.25 + SIGN( 0.25, zwx(ji,jj,jk) * zwx(ji-1,jj  ,jk) ) )
+               &            * ( 0.25d0 + SIGN( 0.25d0, zwx(ji,jj,jk) * zwx(ji-1,jj  ,jk) ) )
                zslpy(ji,jj,jk) =                    ( zwy(ji,jj,jk) + zwy(ji  ,jj-1,jk) )   &
-               &            * ( 0.25 + SIGN( 0.25, zwy(ji,jj,jk) * zwy(ji  ,jj-1,jk) ) )
+               &            * ( 0.25d0 + SIGN( 0.25d0, zwy(ji,jj,jk) * zwy(ji  ,jj-1,jk) ) )
             END DO
          END DO
       END DO
@@ -130,12 +146,12 @@ PROGRAM tra_adv
       DO jk = 1, jpk-1    
          DO jj = 2, jpj
             DO ji = 2, jpi
-               zslpx(ji,jj,jk) = SIGN( 1., zslpx(ji,jj,jk) ) * MIN(    ABS( zslpx(ji  ,jj,jk) ),   &
-               &                                                 2.*ABS( zwx  (ji-1,jj,jk) ),   &
-               &                                                 2.*ABS( zwx  (ji  ,jj,jk) ) )
-               zslpy(ji,jj,jk) = SIGN( 1., zslpy(ji,jj,jk) ) * MIN(    ABS( zslpy(ji,jj  ,jk) ),   &
-               &                                                 2.*ABS( zwy  (ji,jj-1,jk) ),   &
-               &                                                 2.*ABS( zwy  (ji,jj  ,jk) ) )
+               zslpx(ji,jj,jk) = SIGN( 1.d0, zslpx(ji,jj,jk) ) * MIN(    ABS( zslpx(ji  ,jj,jk) ),   &
+               &                                                2.d0*ABS( zwx  (ji-1,jj,jk) ),   &
+               &                                                2.d0*ABS( zwx  (ji  ,jj,jk) ) )
+               zslpy(ji,jj,jk) = SIGN( 1.d0, zslpy(ji,jj,jk) ) * MIN(    ABS( zslpy(ji,jj  ,jk) ),   &
+               &                                                2.d0*ABS( zwy  (ji,jj-1,jk) ),   &
+               &                                                2.d0*ABS( zwy  (ji,jj  ,jk) ) )
             END DO
          END DO
       END DO 
@@ -144,23 +160,23 @@ PROGRAM tra_adv
          zdt  = 1
          DO jj = 2, jpj-1
             DO ji = 2, jpi-1
-                z0u = SIGN( 0.5, pun(ji,jj,jk) )
-                zalpha = 0.5 - z0u
-                zu  = z0u - 0.5 * pun(ji,jj,jk) * zdt
+                z0u = SIGN( 0.5d0, pun(ji,jj,jk) )
+                zalpha = 0.5d0 - z0u
+                zu  = z0u - 0.5d0 * pun(ji,jj,jk) * zdt
 
                 zzwx = mydomain(ji+1,jj,jk) + zind(ji,jj,jk) * (zu * zslpx(ji+1,jj,jk))
                 zzwy = mydomain(ji  ,jj,jk) + zind(ji,jj,jk) * (zu * zslpx(ji  ,jj,jk))
 
                 zwx(ji,jj,jk) = pun(ji,jj,jk) * ( zalpha * zzwx + (1.-zalpha) * zzwy )
                 
-                z0v = SIGN( 0.5, pvn(ji,jj,jk) )
-                zalpha = 0.5 - z0v
-                zv  = z0v - 0.5 * pvn(ji,jj,jk) * zdt
+                z0v = SIGN( 0.5d0, pvn(ji,jj,jk) )
+                zalpha = 0.5d0 - z0v
+                zv  = z0v - 0.5d0 * pvn(ji,jj,jk) * zdt
 
                 zzwx = mydomain(ji,jj+1,jk) + zind(ji,jj,jk) * (zv * zslpy(ji,jj+1,jk))
                 zzwy = mydomain(ji,jj  ,jk) + zind(ji,jj,jk) * (zv * zslpy(ji,jj  ,jk))
 
-                zwy(ji,jj,jk) = pvn(ji,jj,jk) * ( zalpha * zzwx + (1.-zalpha) * zzwy )
+                zwy(ji,jj,jk) = pvn(ji,jj,jk) * ( zalpha * zzwx + (1.d0-zalpha) * zzwy )
              END DO
           END DO
       END DO
@@ -188,7 +204,7 @@ PROGRAM tra_adv
          DO jj = 1, jpj
             DO ji = 1, jpi
                zslpx(ji,jj,jk) =                    ( zwx(ji,jj,jk) + zwx(ji,jj,jk+1) )   &
-               &            * ( 0.25 + SIGN( 0.25, zwx(ji,jj,jk) * zwx(ji,jj,jk+1) ) )
+               &            * ( 0.25d0 + SIGN( 0.25d0, zwx(ji,jj,jk) * zwx(ji,jj,jk+1) ) )
             END DO
          END DO
       END DO
@@ -196,9 +212,9 @@ PROGRAM tra_adv
       DO jk = 2, jpk-1     
          DO jj = 1, jpj
             DO ji = 1, jpi
-               zslpx(ji,jj,jk) = SIGN( 1., zslpx(ji,jj,jk) ) * MIN(    ABS( zslpx(ji,jj,jk  ) ),   &
-               &                                                 2.*ABS( zwx  (ji,jj,jk+1) ),   &
-               &                                                 2.*ABS( zwx  (ji,jj,jk  ) )  )
+               zslpx(ji,jj,jk) = SIGN( 1.d0, zslpx(ji,jj,jk) ) * MIN( ABS( zslpx(ji,jj,jk  ) ), &
+               &                                               2.d0*ABS( zwx  (ji,jj,jk+1) ),   &
+               &                                               2.d0*ABS( zwx  (ji,jj,jk  ) )  )
             END DO
          END DO
       END DO
@@ -210,9 +226,9 @@ PROGRAM tra_adv
       DO jk = 1, jpk-1
          DO jj = 2, jpj-1     
             DO ji = 2, jpi-1
-               z0w = SIGN( 0.5, pwn(ji,jj,jk+1) )
-               zalpha = 0.5 + z0w
-               zw  = z0w - 0.5 * pwn(ji,jj,jk+1) * zdt * zbtr
+               z0w = SIGN( 0.5d0, pwn(ji,jj,jk+1) )
+               zalpha = 0.5d0 + z0w
+               zw  = z0w - 0.5d0 * pwn(ji,jj,jk+1) * zdt * zbtr
 
                zzwx = mydomain(ji,jj,jk+1) + zind(ji,jj,jk) * (zw * zslpx(ji,jj,jk+1))
                zzwy = mydomain(ji,jj,jk  ) + zind(ji,jj,jk) * (zw * zslpx(ji,jj,jk  ))
@@ -232,6 +248,8 @@ PROGRAM tra_adv
          END DO
       END DO
   END DO
+
+  call timer_stop(step_timer)
 
   OPEN(unit = 4, file = 'output.dat', form='formatted')
   
@@ -262,5 +280,7 @@ PROGRAM tra_adv
   DEALLOCATE( upsmsk)
   DEALLOCATE( rnfmsk_z)
   DEALLOCATE( tsn)
+
+  CALL timer_report()
 
 END PROGRAM tra_adv
