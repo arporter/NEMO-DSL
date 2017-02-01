@@ -1,0 +1,3 @@
+[submodule "src/shared/dl_timer"]
+	path = src/shared/dl_timer
+	url = https://bitbucket.org/apeg/dl_timer
