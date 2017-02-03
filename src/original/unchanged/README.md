@@ -5,6 +5,12 @@ the NEMO source code by CMCC.
 
 ## Building ##
 
+The code uses the dl_timer library for timing. Provided you followed
+the steps in the top-level [README](NEMO-DSL/README.md) then the
+source code for this library will have been obtained when you cloned
+the repository. The library is built automatically as part of the
+compilation process.
+
 The compiler and compiler flags to use must be set through the following
 environment variables:
 
