@@ -112,7 +112,7 @@ PROGRAM tra_adv
       call zwxy_psy(zwx,zwy,mydomain,umask,vmask,jpk,jpj,jpi)
       call zero_layer(zslpx(:,:,jpk),jpj,jpi)
       call zero_layer(zslpy(:,:,jpk),jpj,jpi)
-      call zslpxy_psy(zslpx,zslpy,zwx,zwy,jpk,jpl,jpi)
+      call zslpxy_psy(zslpx,zslpy,zwx,zwy,jpk,jpj,jpi)
 
       DO jk = 1, jpk-1    
          DO jj = 2, jpj
