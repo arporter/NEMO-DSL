@@ -7,7 +7,8 @@
 PROGRAM tra_adv
    USE dl_timer, only: timer_init, timer_register, timer_start, timer_stop, timer_report
    USE psy_mod, only : zind_psy, zwxy_psy, zslpxy_psy, zslpxy_update_psy, zwxy2_psy, &
-                       mydomain_update_psy, zwx_psy, zslpx_psy, zslpx_update_psy
+                       mydomain_update_psy, zwx_psy, zslpx_psy, zslpx_update_psy, &
+                       zwx2_psy, mydomain_psy
    USE psy_mod, only : zero_layer, multiply_layer
    REAL*8, ALLOCATABLE, SAVE, DIMENSION(:,:,:,:) :: t3sn, t3ns, t3ew, t3we
    REAL*8, ALLOCATABLE, SAVE, DIMENSION(:,:,:)   :: tsn 
@@ -125,11 +126,10 @@ PROGRAM tra_adv
       call zslpx_psy(zslpx,zwx,jpk,jpj,jpi)
       call zslpx_update_psy(zslpx,zwx,jpk,jpj,jpi)
       call multiply_layer(zwx(:,:,1),pwn(:,:,1),mydomain(:,:,1),jpj,jpi)
-
-      !zwx(:,:, 1 ) = pwn(:,:,1) * mydomain(:,:,1)
-
       zdt  = 1
       zbtr = 1.
+      !call zwx2_psy(zwx,zdt,zbtr,pwn,mydomain,zind,zslpx,jpk,jpj,jpi)
+
       DO jk = 1, jpk-1
          DO jj = 2, jpj-1     
             DO ji = 2, jpi-1
@@ -146,14 +146,8 @@ PROGRAM tra_adv
       END DO
 
       zbtr = 1.
-      DO jk = 1, jpk-1
-         DO jj = 2, jpj-1     
-            DO ji = 2, jpi-1
-               ztra = - zbtr * ( zwx(ji,jj,jk) - zwx(ji,jj,jk+1) )
-               mydomain(ji,jj,jk) = ztra
-            END DO
-         END DO
-      END DO
+      call mydomain_psy(mydomain,zbtr,zwx,jpk,jpj,jpi)
+
   END DO
 
   call timer_stop(step_timer)

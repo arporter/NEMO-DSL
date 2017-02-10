@@ -219,4 +219,65 @@ contains
     !
   end subroutine zslpx_update_psy
   !
+  subroutine zwx2_psy(zwx,zdt,zbtr,pwn,mydomain,zind,zslpx,jpk,jpj,jpi)
+    !
+    use zwx2_kern_mod, only : zwx2_kern
+    !
+    real*8, intent(inout) :: zwx(:,:,:)
+    real*8, intent(in) :: pwn(:,:,:), mydomain(:,:,:), zind(:,:,:), zslpx(:,:,:)
+    real*8, intent(in) :: zdt,zbtr
+    integer, intent(in) :: jpk,jpj,jpi
+    ! local variables
+    integer :: jk,jj,ji
+    !
+    integer :: z0w
+    real :: zalpha, zw, zzwx, zzwy
+      DO jk = 1, jpk-1
+         DO jj = 2, jpj-1     
+            DO ji = 2, jpi-1
+               z0w = SIGN( 0.5d0, pwn(ji,jj,jk+1) )
+               zalpha = 0.5d0 + z0w
+               zw  = z0w - 0.5d0 * pwn(ji,jj,jk+1) * zdt * zbtr
+
+               zzwx = mydomain(ji,jj,jk+1) + zind(ji,jj,jk) * (zw * zslpx(ji,jj,jk+1))
+               zzwy = mydomain(ji,jj,jk  ) + zind(ji,jj,jk) * (zw * zslpx(ji,jj,jk  ))
+
+               zwx(ji,jj,jk+1) = pwn(ji,jj,jk+1) * ( zalpha * zzwx + (1.-zalpha) * zzwy )
+            END DO
+         END DO
+      END DO
+
+
+    !DO jk = 1, jpk-1
+    !   DO jj = 2, jpj-1
+    !      DO ji = 2, jpi-1
+    !         call zwx2_kern(zwx,zdt,zbtr,pwn,mydomain,zind,zslpx,jk,jj,ji)
+    !      END DO
+    !   END DO
+    !END DO
+    !
+  end subroutine zwx2_psy
+  !
+  subroutine mydomain_psy(mydomain,zbtr,zwx,jpk,jpj,jpi)
+    !
+    use mydomain_kern_mod, only : mydomain_kern
+    !
+    real*8, intent(out) :: mydomain(:,:,:)
+    real*8, intent(in) :: zwx(:,:,:)
+    real*8, intent(in) :: zbtr
+    integer, intent(in) :: jpk,jpj,jpi
+    ! local variables
+    real*8 :: ztra
+    integer :: jk,jj,ji
+    !
+    DO jk = 1, jpk-1
+       DO jj = 2, jpj-1     
+          DO ji = 2, jpi-1
+             call mydomain_kern(mydomain,zbtr,zwx,jk,jj,ji)
+          END DO
+       END DO
+    END DO
+    !
+  end subroutine mydomain_psy
+  !
 end module psy_mod
