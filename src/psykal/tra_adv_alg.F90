@@ -10,6 +10,7 @@ PROGRAM tra_adv
                        mydomain_update_psy, zwx_psy, zslpx_psy, zslpx_update_psy, &
                        zwx2_psy, mydomain_psy
    USE psy_mod, only : zero_layer, multiply_layer
+   implicit none
    REAL*8, ALLOCATABLE, SAVE, DIMENSION(:,:,:,:) :: t3sn, t3ns, t3ew, t3we
    REAL*8, ALLOCATABLE, SAVE, DIMENSION(:,:,:)   :: tsn 
    REAL*8, ALLOCATABLE, SAVE, DIMENSION(:,:,:)   :: pun, pvn, pwn
@@ -18,6 +19,7 @@ PROGRAM tra_adv
    REAL*8, ALLOCATABLE, SAVE, DIMENSION(:)       :: rnfmsk_z
    REAL*8                                        :: zice, zu, z0u, zzwx, zv, z0v, zzwy, ztra, zbtr, zdt, zalpha
    REAL*8                                        :: r
+   REAL*8                                        :: zw, z0w
    INTEGER                                       :: jpi, jpj, jpk, ji, jj, jk, jt
    INTEGER*8                                     :: it
    CHARACTER(len=10)                             :: env
@@ -128,23 +130,7 @@ PROGRAM tra_adv
       call multiply_layer(zwx(:,:,1),pwn(:,:,1),mydomain(:,:,1),jpj,jpi)
       zdt  = 1
       zbtr = 1.
-      !call zwx2_psy(zwx,zdt,zbtr,pwn,mydomain,zind,zslpx,jpk,jpj,jpi)
-
-      DO jk = 1, jpk-1
-         DO jj = 2, jpj-1     
-            DO ji = 2, jpi-1
-               z0w = SIGN( 0.5d0, pwn(ji,jj,jk+1) )
-               zalpha = 0.5d0 + z0w
-               zw  = z0w - 0.5d0 * pwn(ji,jj,jk+1) * zdt * zbtr
-
-               zzwx = mydomain(ji,jj,jk+1) + zind(ji,jj,jk) * (zw * zslpx(ji,jj,jk+1))
-               zzwy = mydomain(ji,jj,jk  ) + zind(ji,jj,jk) * (zw * zslpx(ji,jj,jk  ))
-
-               zwx(ji,jj,jk+1) = pwn(ji,jj,jk+1) * ( zalpha * zzwx + (1.-zalpha) * zzwy )
-            END DO
-         END DO
-      END DO
-
+      call zwx2_psy(zwx,zdt,zbtr,pwn,mydomain,zind,zslpx,jpk,jpj,jpi)
       zbtr = 1.
       call mydomain_psy(mydomain,zbtr,zwx,jpk,jpj,jpi)
 

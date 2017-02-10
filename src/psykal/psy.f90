@@ -230,31 +230,13 @@ contains
     ! local variables
     integer :: jk,jj,ji
     !
-    integer :: z0w
-    real :: zalpha, zw, zzwx, zzwy
-      DO jk = 1, jpk-1
-         DO jj = 2, jpj-1     
-            DO ji = 2, jpi-1
-               z0w = SIGN( 0.5d0, pwn(ji,jj,jk+1) )
-               zalpha = 0.5d0 + z0w
-               zw  = z0w - 0.5d0 * pwn(ji,jj,jk+1) * zdt * zbtr
-
-               zzwx = mydomain(ji,jj,jk+1) + zind(ji,jj,jk) * (zw * zslpx(ji,jj,jk+1))
-               zzwy = mydomain(ji,jj,jk  ) + zind(ji,jj,jk) * (zw * zslpx(ji,jj,jk  ))
-
-               zwx(ji,jj,jk+1) = pwn(ji,jj,jk+1) * ( zalpha * zzwx + (1.-zalpha) * zzwy )
-            END DO
-         END DO
-      END DO
-
-
-    !DO jk = 1, jpk-1
-    !   DO jj = 2, jpj-1
-    !      DO ji = 2, jpi-1
-    !         call zwx2_kern(zwx,zdt,zbtr,pwn,mydomain,zind,zslpx,jk,jj,ji)
-    !      END DO
-    !   END DO
-    !END DO
+    DO jk = 1, jpk-1
+       DO jj = 2, jpj-1
+          DO ji = 2, jpi-1
+             call zwx2_kern(zwx,zdt,zbtr,pwn,mydomain,zind,zslpx,jk,jj,ji)
+          END DO
+       END DO
+    END DO
     !
   end subroutine zwx2_psy
   !
