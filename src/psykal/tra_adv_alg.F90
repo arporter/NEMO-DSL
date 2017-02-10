@@ -7,7 +7,7 @@
 PROGRAM tra_adv
    USE dl_timer, only: timer_init, timer_register, timer_start, timer_stop, timer_report
    USE psy_mod, only : zind_psy, zwxy_psy, zslpxy_psy, zslpxy_update_psy, zwxy2_psy, &
-                       mydomain_update_psy, zwx_psy
+                       mydomain_update_psy, zwx_psy, zslpx_psy
    USE psy_mod, only : zero_layer
    REAL*8, ALLOCATABLE, SAVE, DIMENSION(:,:,:,:) :: t3sn, t3ns, t3ew, t3we
    REAL*8, ALLOCATABLE, SAVE, DIMENSION(:,:,:)   :: tsn 
@@ -122,15 +122,16 @@ PROGRAM tra_adv
       call zero_layer(zwx(:,:,jpk),jpj,jpi)
       call zwx_psy(zwx,tmask,mydomain,jpk,jpj,jpi)
       call zero_layer(zslpx(:,:,1),jpj,jpi)
+      call zslpx_psy(zslpx,zwx,jpk,jpj,jpi)
 
-      DO jk = 2, jpk-1    
-         DO jj = 1, jpj
-            DO ji = 1, jpi
-               zslpx(ji,jj,jk) =                    ( zwx(ji,jj,jk) + zwx(ji,jj,jk+1) )   &
-               &            * ( 0.25d0 + SIGN( 0.25d0, zwx(ji,jj,jk) * zwx(ji,jj,jk+1) ) )
-            END DO
-         END DO
-      END DO
+      !DO jk = 2, jpk-1    
+      !   DO jj = 1, jpj
+      !      DO ji = 1, jpi
+      !         zslpx(ji,jj,jk) =                    ( zwx(ji,jj,jk) + zwx(ji,jj,jk+1) )   &
+      !         &            * ( 0.25d0 + SIGN( 0.25d0, zwx(ji,jj,jk) * zwx(ji,jj,jk+1) ) )
+      !      END DO
+      !   END DO
+      !END DO
 
       DO jk = 2, jpk-1     
          DO jj = 1, jpj

@@ -163,4 +163,24 @@ contains
     !
   end subroutine zwx_psy
   !
+  subroutine zslpx_psy(zslpx,zwx,jpk,jpj,jpi)
+    !
+    use zslpx_kern_mod, only : zslpx_kern
+    !
+    real*8, intent(out) :: zslpx(:,:,:)
+    real*8, intent(in) :: zwx(:,:,:)
+    integer, intent(in) :: jpk,jpj,jpi
+    ! local variables
+    integer :: jk,jj,ji
+    !
+    DO jk = 2, jpk-1
+       DO jj = 1, jpj
+          DO ji = 1, jpi
+             call zslpx_kern(zslpx,zwx,jk,jj,ji)
+          END DO
+       END DO
+    END DO
+    !
+  end subroutine zslpx_psy
+  !
 end module psy_mod
