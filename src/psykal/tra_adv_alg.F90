@@ -6,7 +6,7 @@
    !!=====================================================================================
 PROGRAM tra_adv
    USE dl_timer, only: timer_init, timer_register, timer_start, timer_stop, timer_report
-   USE psy_mod, only : zind_psy, zwxy_psy, zslpxy_psy
+   USE psy_mod, only : zind_psy, zwxy_psy, zslpxy_psy, zslpxy_update_psy
    USE psy_mod, only : zero_layer
    REAL*8, ALLOCATABLE, SAVE, DIMENSION(:,:,:,:) :: t3sn, t3ns, t3ew, t3we
    REAL*8, ALLOCATABLE, SAVE, DIMENSION(:,:,:)   :: tsn 
@@ -113,19 +113,7 @@ PROGRAM tra_adv
       call zero_layer(zslpx(:,:,jpk),jpj,jpi)
       call zero_layer(zslpy(:,:,jpk),jpj,jpi)
       call zslpxy_psy(zslpx,zslpy,zwx,zwy,jpk,jpj,jpi)
-
-      DO jk = 1, jpk-1    
-         DO jj = 2, jpj
-            DO ji = 2, jpi
-               zslpx(ji,jj,jk) = SIGN( 1.d0, zslpx(ji,jj,jk) ) * MIN(    ABS( zslpx(ji  ,jj,jk) ),   &
-               &                                                2.d0*ABS( zwx  (ji-1,jj,jk) ),   &
-               &                                                2.d0*ABS( zwx  (ji  ,jj,jk) ) )
-               zslpy(ji,jj,jk) = SIGN( 1.d0, zslpy(ji,jj,jk) ) * MIN(    ABS( zslpy(ji,jj  ,jk) ),   &
-               &                                                2.d0*ABS( zwy  (ji,jj-1,jk) ),   &
-               &                                                2.d0*ABS( zwy  (ji,jj  ,jk) ) )
-            END DO
-         END DO
-      END DO 
+      call zslpxy_update_psy(zslpx,zslpy,zwx,zwy,jpk,jpj,jpi)
 
       DO jk = 1, jpk-1
          zdt  = 1

@@ -82,4 +82,24 @@ contains
     !
   end subroutine zslpxy_psy
   !
+  subroutine zslpxy_update_psy(zslpx,zslpy,zwx,zwy,jpk,jpj,jpi)
+    !
+    use zslpxy_update_kern_mod, only : zslpxy_update_kern
+    !
+    real*8, intent(inout) :: zslpx(:,:,:), zslpy(:,:,:)
+    real*8, intent(in)  :: zwx(:,:,:), zwy(:,:,:)
+    integer, intent(in) :: jpk,jpj,jpi
+    ! local variables
+    integer :: jk,jj,ji   
+    !
+    DO jk = 1, jpk-1    
+       DO jj = 2, jpj
+          DO ji = 2, jpi
+             call zslpxy_update_kern(zslpx,zslpy,zwx,zwy,jk,jj,ji)
+          END DO
+       END DO
+    END DO
+    !
+  end subroutine
+  !
 end module psy_mod
