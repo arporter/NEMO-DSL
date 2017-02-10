@@ -143,4 +143,24 @@ contains
     !
   end subroutine mydomain_update_psy
   !
+  subroutine zwx_psy(zwx,tmask,mydomain,jpk,jpj,jpi)
+    !
+    use zwx_kern_mod, only : zwx_kern
+    !
+    real*8, intent(out) :: zwx(:,:,:)
+    real*8, intent(in) :: tmask(:,:,:), mydomain(:,:,:)
+    integer, intent(in) :: jpk,jpj,jpi
+    ! local variables
+    integer :: jk,jj,ji
+    !
+    DO jk = 2, jpk-1
+       DO jj = 1, jpj
+          DO ji = 1, jpi
+             call zwx_kern(zwx,tmask,mydomain,jk,jj,ji)
+          END DO
+       END DO
+    END DO
+    !
+  end subroutine zwx_psy
+  !
 end module psy_mod

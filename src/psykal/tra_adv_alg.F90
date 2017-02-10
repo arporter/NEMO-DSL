@@ -6,7 +6,8 @@
    !!=====================================================================================
 PROGRAM tra_adv
    USE dl_timer, only: timer_init, timer_register, timer_start, timer_stop, timer_report
-   USE psy_mod, only : zind_psy, zwxy_psy, zslpxy_psy, zslpxy_update_psy, zwxy2_psy, mydomain_update_psy
+   USE psy_mod, only : zind_psy, zwxy_psy, zslpxy_psy, zslpxy_update_psy, zwxy2_psy, &
+                       mydomain_update_psy, zwx_psy
    USE psy_mod, only : zero_layer
    REAL*8, ALLOCATABLE, SAVE, DIMENSION(:,:,:,:) :: t3sn, t3ns, t3ew, t3we
    REAL*8, ALLOCATABLE, SAVE, DIMENSION(:,:,:)   :: tsn 
@@ -117,12 +118,9 @@ PROGRAM tra_adv
       zdt=1
       call zwxy2_psy(zwx,zwy,zdt,pun,pvn,mydomain,zind,zslpx,zslpy,jpk,jpj,jpi)
       call mydomain_update_psy(mydomain,zwx,zwy,jpk,jpj,jpi)
-
-      zwx (:,:, 1 ) = 0.e0    ;    zwx (:,:,jpk) = 0.e0
-
-      DO jk = 2, jpk-1   
-         zwx(:,:,jk) = tmask(:,:,jk) * ( mydomain(:,:,jk-1) - mydomain(:,:,jk) )
-      END DO
+      call zero_layer(zwx(:,:,1),jpj,jpi)
+      call zero_layer(zwx(:,:,jpk),jpj,jpi)
+      call zwx_psy(zwx,tmask,mydomain,jpk,jpj,jpi)
 
       zslpx(:,:,1) = 0.e0
 
