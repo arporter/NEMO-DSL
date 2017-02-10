@@ -121,8 +121,7 @@ PROGRAM tra_adv
       call zero_layer(zwx(:,:,1),jpj,jpi)
       call zero_layer(zwx(:,:,jpk),jpj,jpi)
       call zwx_psy(zwx,tmask,mydomain,jpk,jpj,jpi)
-
-      zslpx(:,:,1) = 0.e0
+      call zero_layer(zslpx(:,:,1),jpj,jpi)
 
       DO jk = 2, jpk-1    
          DO jj = 1, jpj
