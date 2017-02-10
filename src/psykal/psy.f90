@@ -18,6 +18,22 @@ contains
     END DO
     !
   end subroutine zero_layer
+  !
+  subroutine multiply_layer(field_out,field_in1,field_in2,jpj,jpi)
+    !
+    real*8, intent(out) :: field_out(:,:)
+    real*8, intent(in) :: field_in1(:,:), field_in2(:,:)
+    integer, intent(in) :: jpj,jpi
+    ! local variables
+    integer :: jj,ji
+    !
+    DO jj=1,jpj
+      DO ji=1,jpi
+        field_out(ji,jj) = field_in1(ji,jj) * field_in2(ji,jj)
+      END DO
+    END DO
+    !
+  end subroutine multiply_layer
   !   
   subroutine zind_psy(zind,tsn,ztfreez,rnfmsk,rnfmsk_z,upsmsk,tmask,jpk,jpj,jpi)
     !
