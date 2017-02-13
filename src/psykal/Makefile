@@ -11,14 +11,14 @@ all: tra_adv.exe
 # Location of the dl_timer code
 TIMER_DIR = ../shared/dl_timer
 
-FORT_FLAGS = ${F90FLAGS} ${OMPFLAGS} -I${TIMER_DIR}/src
+FORT_FLAGS = ${F90FLAGS} -I${TIMER_DIR}/src
 
 KERN_OBJ = zind_kern.o zwxy_kern.o zslpxy_kern.o zslpxy_update_kern.o zwxy2_kern.o \
 	   mydomain_update_kern.o zwx_kern.o zslpx_kern.o zslpx_update_kern.o \
 	   zwx2_kern.o mydomain_kern.o
 
 tra_adv.exe: timer_lib ${KERN_OBJ} psy.o tra_adv_alg.o
-	${F90} ${OMPFLAGS} -o $@ tra_adv_alg.o psy.o ${KERN_OBJ} ${TIMER_DIR}/dl_timer_lib.a
+	${F90} -o $@ tra_adv_alg.o psy.o ${KERN_OBJ} ${TIMER_DIR}/dl_timer_lib.a
 
 %.o: %.f90
 	${F90} ${FORT_FLAGS} -c $<
