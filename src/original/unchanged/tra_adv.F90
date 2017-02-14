@@ -14,6 +14,7 @@ PROGRAM tra_adv
    REAL*8, ALLOCATABLE, SAVE, DIMENSION(:)       :: rnfmsk_z
    REAL*8                                        :: zice, zu, z0u, zzwx, zv, z0v, zzwy, ztra, zbtr, zdt, zalpha
    REAL*8                                        :: r
+   REAL*8                                        :: zw, z0w
    INTEGER                                       :: jpi, jpj, jpk, ji, jj, jk, jt
    INTEGER*8                                     :: it
    CHARACTER(len=10)                             :: env
