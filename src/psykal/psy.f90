@@ -238,13 +238,12 @@ contains
     !
   end subroutine zwx2_psy
   !
-  subroutine mydomain_psy(mydomain,zbtr,zwx,jpk,jpj,jpi)
+  subroutine mydomain_psy(mydomain,zwx,jpk,jpj,jpi)
     !
     use mydomain_kern_mod, only : mydomain_kern
     !
     real*8, intent(out) :: mydomain(:,:,:)
     real*8, intent(in) :: zwx(:,:,:)
-    real*8, intent(in) :: zbtr
     integer, intent(in) :: jpk,jpj,jpi
     ! local variables
     real*8 :: ztra
@@ -253,7 +252,7 @@ contains
     DO jk = 1, jpk-1
        DO jj = 2, jpj-1     
           DO ji = 2, jpi-1
-             call mydomain_kern(mydomain,zbtr,zwx,jk,jj,ji)
+             call mydomain_kern(mydomain,zwx,jk,jj,ji)
           END DO
        END DO
     END DO

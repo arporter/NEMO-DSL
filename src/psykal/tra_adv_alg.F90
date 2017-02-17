@@ -17,7 +17,7 @@ PROGRAM tra_adv
    REAL*8, ALLOCATABLE, SAVE, DIMENSION(:,:,:)   :: mydomain, zslpx, zslpy, zwx, zwy, umask, vmask, tmask, zind
    REAL*8, ALLOCATABLE, SAVE, DIMENSION(:,:)     :: ztfreez, rnfmsk, upsmsk
    REAL*8, ALLOCATABLE, SAVE, DIMENSION(:)       :: rnfmsk_z
-   REAL*8                                        :: zice, zu, z0u, zzwx, zv, z0v, zzwy, ztra, zbtr, zalpha
+   REAL*8                                        :: zice, zu, z0u, zzwx, zv, z0v, zzwy, ztra, zalpha
    REAL*8                                        :: r
    REAL*8                                        :: zw, z0w
    INTEGER                                       :: jpi, jpj, jpk, ji, jj, jk, jt
@@ -128,8 +128,7 @@ PROGRAM tra_adv
       call zslpx_update_psy(zslpx,zwx,jpk,jpj,jpi)
       call multiply_layer(zwx(:,:,1),pwn(:,:,1),mydomain(:,:,1),jpj,jpi)
       call zwx2_psy(zwx,pwn,mydomain,zind,zslpx,jpk,jpj,jpi)
-      zbtr = 1.
-      call mydomain_psy(mydomain,zbtr,zwx,jpk,jpj,jpi)
+      call mydomain_psy(mydomain,zwx,jpk,jpj,jpi)
 
   END DO
 
