@@ -118,13 +118,12 @@ contains
     !
   end subroutine
   !
-  subroutine zwxy2_psy(zwx,zwy,zdt,pun,pvn,mydomain,zind,zslpx,zslpy,jpk,jpj,jpi)
+  subroutine zwxy2_psy(zwx,zwy,pun,pvn,mydomain,zind,zslpx,zslpy,jpk,jpj,jpi)
     !
     use zwxy2_kern_mod, only : zwxy2_kern
     !
     real*8, intent(out) :: zwx(:,:,:), zwy(:,:,:)
     real*8, intent(in)  :: pun(:,:,:), pvn(:,:,:), mydomain(:,:,:), zind(:,:,:), zslpx(:,:,:), zslpy(:,:,:)
-    real*8, intent(in)  :: zdt
     integer, intent(in) :: jpk,jpj,jpi
     ! local variables
     integer :: jk,jj,ji   
@@ -132,7 +131,7 @@ contains
     DO jk = 1, jpk-1
        DO jj = 2, jpj-1
           DO ji = 2, jpi-1
-             call zwxy2_kern(zwx,zwy,zdt,pun,pvn,mydomain,zind,zslpx,zslpy,jk,jj,ji)
+             call zwxy2_kern(zwx,zwy,pun,pvn,mydomain,zind,zslpx,zslpy,jk,jj,ji)
           END DO
        END DO
     END DO

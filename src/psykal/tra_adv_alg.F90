@@ -118,8 +118,7 @@ PROGRAM tra_adv
       call zero_layer(zslpy(:,:,jpk),jpj,jpi)
       call zslpxy_psy(zslpx,zslpy,zwx,zwy,jpk,jpj,jpi)
       call zslpxy_update_psy(zslpx,zslpy,zwx,zwy,jpk,jpj,jpi)
-      zdt=1
-      call zwxy2_psy(zwx,zwy,zdt,pun,pvn,mydomain,zind,zslpx,zslpy,jpk,jpj,jpi)
+      call zwxy2_psy(zwx,zwy,pun,pvn,mydomain,zind,zslpx,zslpy,jpk,jpj,jpi)
       call mydomain_update_psy(mydomain,zwx,zwy,jpk,jpj,jpi)
       call zero_layer(zwx(:,:,1),jpj,jpi)
       call zero_layer(zwx(:,:,jpk),jpj,jpi)
