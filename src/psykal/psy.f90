@@ -218,13 +218,12 @@ contains
     !
   end subroutine zslpx_update_psy
   !
-  subroutine zwx2_psy(zwx,zdt,zbtr,pwn,mydomain,zind,zslpx,jpk,jpj,jpi)
+  subroutine zwx2_psy(zwx,pwn,mydomain,zind,zslpx,jpk,jpj,jpi)
     !
     use zwx2_kern_mod, only : zwx2_kern
     !
     real*8, intent(inout) :: zwx(:,:,:)
     real*8, intent(in) :: pwn(:,:,:), mydomain(:,:,:), zind(:,:,:), zslpx(:,:,:)
-    real*8, intent(in) :: zdt,zbtr
     integer, intent(in) :: jpk,jpj,jpi
     ! local variables
     integer :: jk,jj,ji
@@ -232,7 +231,7 @@ contains
     DO jk = 1, jpk-1
        DO jj = 2, jpj-1
           DO ji = 2, jpi-1
-             call zwx2_kern(zwx,zdt,zbtr,pwn,mydomain,zind,zslpx,jk,jj,ji)
+             call zwx2_kern(zwx,pwn,mydomain,zind,zslpx,jk,jj,ji)
           END DO
        END DO
     END DO

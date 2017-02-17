@@ -4,15 +4,16 @@ implicit none
 !
 contains
   !
-  subroutine zwx2_kern(zwx,zdt,zbtr,pwn,mydomain,zind,zslpx,jk,jj,ji)
+  subroutine zwx2_kern(zwx,pwn,mydomain,zind,zslpx,jk,jj,ji)
     !
     real*8, intent(out) :: zwx(:,:,:)
     real*8, intent(in) :: pwn(:,:,:), mydomain(:,:,:), zind(:,:,:), zslpx(:,:,:)
-    real*8, intent(in) :: zdt,zbtr
     integer, intent(in) :: jk,jj,ji
     ! local variables
-    real*8 :: z0w, zalpha, zw, zzwx, zzwy
+    real*8 :: z0w, zalpha, zw, zzwx, zzwy, zdt, zbtr
     !
+    zdt=1
+    zbtr=1.
     z0w = SIGN( 0.5d0, pwn(ji,jj,jk+1) )
     zalpha = 0.5d0 + z0w
     zw  = z0w - 0.5d0 * pwn(ji,jj,jk+1) * zdt * zbtr
