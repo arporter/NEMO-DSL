@@ -66,15 +66,14 @@ contains
     !
   end subroutine multiply_bottom_layer
   !
-  subroutine zind_psy(zind,tsn,ztfreez,rnfmsk,rnfmsk_z,upsmsk,tmask,jpk,jpj,jpi)
+  subroutine zind_psy(zind,tsn,ztfreez,rnfmsk,rnfmsk_z,upsmsk,tmask)
     !
     use zind_kern_mod, only : zind_kern
     !
-    real*8,  intent(out) :: zind(:,:,:)
-    real*8,  intent(in)  :: tsn(:,:,:)
-    real*8,  intent(in)  :: tmask(:,:,:)
-    real*8,  intent(in)  :: ztfreez(:,:), rnfmsk(:,:), rnfmsk_z(:), upsmsk(:,:)
-    integer, intent(in) :: jpk,jpj,jpi
+    real*8,  intent(out) :: zind(jpi,jpj,jpk)
+    real*8,  intent(in)  :: tsn(jpi,jpj,jpk)
+    real*8,  intent(in)  :: tmask(jpi,jpj,jpk)
+    real*8,  intent(in)  :: ztfreez(jpi,jpj), rnfmsk(jpi,jpj), rnfmsk_z(jpk), upsmsk(jpi,jpj)
     ! local variables
     integer :: jk,ji,jj
     !

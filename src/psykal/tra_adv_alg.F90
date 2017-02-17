@@ -114,7 +114,7 @@ PROGRAM tra_adv
 
    DO jt = 1, it
 
-      call zind_psy(zind,tsn,ztfreez,rnfmsk,rnfmsk_z,upsmsk,tmask,jpk,jpj,jpi)
+      call zind_psy(zind,tsn,ztfreez,rnfmsk,rnfmsk_z,upsmsk,tmask)
       call zero_top_layer(zwx)
       call zero_top_layer(zwy)
       call zwxy_psy(zwx,zwy,mydomain,umask,vmask,jpk,jpj,jpi)
