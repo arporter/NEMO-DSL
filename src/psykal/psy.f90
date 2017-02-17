@@ -87,14 +87,13 @@ contains
     !
   end subroutine zind_psy
   !
-  subroutine zwxy_psy(zwx,zwy,mydomain,umask,vmask,jpk,jpj,jpi)
+  subroutine zwxy_psy(zwx,zwy,mydomain,umask,vmask)
     !
     use zwxy_kern_mod, only : zwxy_kern
     !
-    real*8,  intent(out) :: zwx(:,:,:), zwy(:,:,:)
-    real*8,  intent(in)  :: mydomain(:,:,:)
-    real*8,  intent(in)  :: umask(:,:,:), vmask(:,:,:)
-    integer, intent(in) :: jpk,jpj,jpi
+    real*8,  intent(out) :: zwx(jpi,jpj,jpk), zwy(jpi,jpj,jpk)
+    real*8,  intent(in)  :: mydomain(jpi,jpj,jpk)
+    real*8,  intent(in)  :: umask(jpi,jpj,jpk), vmask(jpi,jpj,jpk)
     ! local variables
     integer :: jk,jj,ji
     !
@@ -108,13 +107,12 @@ contains
     !
   end subroutine zwxy_psy
   !
-  subroutine zslpxy_psy(zslpx,zslpy,zwx,zwy,jpk,jpj,jpi)
+  subroutine zslpxy_psy(zslpx,zslpy,zwx,zwy)
     !
     use zslpxy_kern_mod, only : zslpxy_kern
     !
-    real*8, intent(out) :: zslpx(:,:,:), zslpy(:,:,:)
-    real*8, intent(in)  :: zwx(:,:,:), zwy(:,:,:)
-    integer, intent(in) :: jpk,jpj,jpi
+    real*8, intent(out) :: zslpx(jpi,jpj,jpk), zslpy(jpi,jpj,jpk)
+    real*8, intent(in)  :: zwx(jpi,jpj,jpk), zwy(jpi,jpj,jpk)
     ! local variables
     integer :: jk,jj,ji
     !
