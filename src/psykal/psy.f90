@@ -252,7 +252,7 @@ contains
     ! local variables
     integer :: jk,jj,ji
     !
-    DO jk = 1, jpk-1
+    DO jk = 2, jpk
        DO jj = 2, jpj-1
           DO ji = 2, jpi-1
              call zwx2_kern(zwx,pwn,mydomain,zind,zslpx,jk,jj,ji)
