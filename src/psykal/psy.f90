@@ -4,7 +4,7 @@ implicit none
 !
 private
 public :: set_bounds
-public :: zero_top_layer, zero_layer, multiply_layer
+public :: zero_top_layer, zero_bottom_layer, multiply_layer
 public :: zind_psy, zwxy_psy, zslpxy_psy, zslpxy_update_psy, zwxy2_psy, &
           mydomain_update_psy, zwx_psy, zslpx_psy, zslpx_update_psy, &
           zwx2_psy, mydomain_psy
@@ -37,20 +37,19 @@ contains
     !
   end subroutine zero_top_layer
   !
-  subroutine zero_layer(field,jpj,jpi)
+  subroutine zero_bottom_layer(field)
     !
-    real*8, intent(out) :: field(:,:)
-    integer, intent(in) :: jpj,jpi
+    real*8, intent(inout) :: field(jpi,jpj,jpk)
     ! local variables
     integer :: jj,ji
     !
     DO jj=1,jpj
       DO ji=1,jpi
-        field(ji,jj) = 0.e0
+        field(ji,jj,1) = 0.e0
       END DO
     END DO
     !
-  end subroutine zero_layer
+  end subroutine zero_bottom_layer
   !
   subroutine multiply_layer(field_out,field_in1,field_in2,jpj,jpi)
     !
