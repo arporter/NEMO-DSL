@@ -126,17 +126,16 @@ contains
     !
   end subroutine zslpxy_psy
   !
-  subroutine zslpxy_update_psy(zslpx,zslpy,zwx,zwy,jpk,jpj,jpi)
+  subroutine zslpxy_update_psy(zslpx,zslpy,zwx,zwy)
     !
     use zslpxy_update_kern_mod, only : zslpxy_update_kern
     !
-    real*8, intent(inout) :: zslpx(:,:,:), zslpy(:,:,:)
-    real*8, intent(in)  :: zwx(:,:,:), zwy(:,:,:)
-    integer, intent(in) :: jpk,jpj,jpi
+    real*8, intent(inout) :: zslpx(jpi,jpj,jpk), zslpy(jpi,jpj,jpk)
+    real*8, intent(in)  :: zwx(jpi,jpj,jpk), zwy(jpi,jpj,jpk)
     ! local variables
     integer :: jk,jj,ji   
     !
-    DO jk = 1, jpk-1    
+    DO jk = 1, jpk-1
        DO jj = 2, jpj
           DO ji = 2, jpi
              call zslpxy_update_kern(zslpx,zslpy,zwx,zwy,jk,jj,ji)
@@ -146,13 +145,14 @@ contains
     !
   end subroutine
   !
-  subroutine zwxy2_psy(zwx,zwy,pun,pvn,mydomain,zind,zslpx,zslpy,jpk,jpj,jpi)
+  subroutine zwxy2_psy(zwx,zwy,pun,pvn,mydomain,zind,zslpx,zslpy)
     !
     use zwxy2_kern_mod, only : zwxy2_kern
     !
-    real*8, intent(out) :: zwx(:,:,:), zwy(:,:,:)
-    real*8, intent(in)  :: pun(:,:,:), pvn(:,:,:), mydomain(:,:,:), zind(:,:,:), zslpx(:,:,:), zslpy(:,:,:)
-    integer, intent(in) :: jpk,jpj,jpi
+    real*8, intent(out) :: zwx(jpi,jpj,jpk), zwy(jpi,jpj,jpk)
+    real*8, intent(in)  :: pun(jpi,jpj,jpk), pvn(jpi,jpj,jpk), &
+                           mydomain(jpi,jpj,jpk), zind(jpi,jpj,jpk), &
+                           zslpx(jpi,jpj,jpk), zslpy(jpi,jpj,jpk)
     ! local variables
     integer :: jk,jj,ji   
     !
@@ -166,13 +166,12 @@ contains
     !
   end subroutine zwxy2_psy
   !
-  subroutine mydomain_update_psy(mydomain,zwx,zwy,jpk,jpj,jpi)
+  subroutine mydomain_update_psy(mydomain,zwx,zwy)
     !
     use mydomain_update_kern_mod, only : mydomain_update_kern
     !
-    real*8, intent(inout) :: mydomain(:,:,:)
-    real*8, intent(in)    :: zwx(:,:,:), zwy(:,:,:)
-    integer, intent(in)   :: jpk,jpj,jpi
+    real*8, intent(inout) :: mydomain(jpi,jpj,jpk)
+    real*8, intent(in)    :: zwx(jpi,jpj,jpk), zwy(jpi,jpj,jpk)
     ! local variables
     integer :: jk,jj,ji
     !
@@ -186,13 +185,12 @@ contains
     !
   end subroutine mydomain_update_psy
   !
-  subroutine zwx_psy(zwx,tmask,mydomain,jpk,jpj,jpi)
+  subroutine zwx_psy(zwx,tmask,mydomain)
     !
     use zwx_kern_mod, only : zwx_kern
     !
-    real*8, intent(out) :: zwx(:,:,:)
-    real*8, intent(in) :: tmask(:,:,:), mydomain(:,:,:)
-    integer, intent(in) :: jpk,jpj,jpi
+    real*8, intent(out) :: zwx(jpi,jpj,jpk)
+    real*8, intent(in) :: tmask(jpi,jpj,jpk), mydomain(jpi,jpj,jpk)
     ! local variables
     integer :: jk,jj,ji
     !
@@ -206,13 +204,12 @@ contains
     !
   end subroutine zwx_psy
   !
-  subroutine zslpx_psy(zslpx,zwx,jpk,jpj,jpi)
+  subroutine zslpx_psy(zslpx,zwx)
     !
     use zslpx_kern_mod, only : zslpx_kern
     !
-    real*8, intent(out) :: zslpx(:,:,:)
-    real*8, intent(in) :: zwx(:,:,:)
-    integer, intent(in) :: jpk,jpj,jpi
+    real*8, intent(out) :: zslpx(jpi,jpj,jpk)
+    real*8, intent(in) :: zwx(jpi,jpj,jpk)
     ! local variables
     integer :: jk,jj,ji
     !
@@ -226,13 +223,12 @@ contains
     !
   end subroutine zslpx_psy
   !
-  subroutine zslpx_update_psy(zslpx,zwx,jpk,jpj,jpi)
+  subroutine zslpx_update_psy(zslpx,zwx)
     !
     use zslpx_update_kern_mod, only : zslpx_update_kern
     !
-    real*8, intent(inout) :: zslpx(:,:,:)
-    real*8, intent(in) :: zwx(:,:,:)
-    integer, intent(in) :: jpk,jpj,jpi
+    real*8, intent(inout) :: zslpx(jpi,jpj,jpk)
+    real*8, intent(in) :: zwx(jpi,jpj,jpk)
     ! local variables
     integer :: jk,jj,ji
     !
@@ -246,13 +242,13 @@ contains
     !
   end subroutine zslpx_update_psy
   !
-  subroutine zwx2_psy(zwx,pwn,mydomain,zind,zslpx,jpk,jpj,jpi)
+  subroutine zwx2_psy(zwx,pwn,mydomain,zind,zslpx)
     !
     use zwx2_kern_mod, only : zwx2_kern
     !
-    real*8, intent(inout) :: zwx(:,:,:)
-    real*8, intent(in) :: pwn(:,:,:), mydomain(:,:,:), zind(:,:,:), zslpx(:,:,:)
-    integer, intent(in) :: jpk,jpj,jpi
+    real*8, intent(inout) :: zwx(jpi,jpj,jpk)
+    real*8, intent(in) :: pwn(jpi,jpj,jpk), mydomain(jpi,jpj,jpk), &
+                          zind(jpi,jpj,jpk), zslpx(jpi,jpj,jpk)
     ! local variables
     integer :: jk,jj,ji
     !
@@ -266,13 +262,12 @@ contains
     !
   end subroutine zwx2_psy
   !
-  subroutine mydomain_psy(mydomain,zwx,jpk,jpj,jpi)
+  subroutine mydomain_psy(mydomain,zwx)
     !
     use mydomain_kern_mod, only : mydomain_kern
     !
-    real*8, intent(out) :: mydomain(:,:,:)
-    real*8, intent(in) :: zwx(:,:,:)
-    integer, intent(in) :: jpk,jpj,jpi
+    real*8, intent(out) :: mydomain(jpi,jpj,jpk)
+    real*8, intent(in) :: zwx(jpi,jpj,jpk)
     ! local variables
     integer :: jk,jj,ji
     !
