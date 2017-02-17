@@ -2,7 +2,26 @@ module psy_mod
 !
 implicit none
 !
+private
+public :: set_bounds
+public :: zero_layer, multiply_layer
+public :: zind_psy, zwxy_psy, zslpxy_psy, zslpxy_update_psy, zwxy2_psy, &
+          mydomain_update_psy, zwx_psy, zslpx_psy, zslpx_update_psy, &
+          zwx2_psy, mydomain_psy
+!
+integer :: jpk, jpj, jpi
+!
 contains
+  !
+  subroutine set_bounds(jpk_in,jpj_in,jpi_in)
+    !
+    integer, intent(in) :: jpk_in,jpj_in,jpi_in
+    !
+    jpk=jpk_in
+    jpj=jpj_in
+    jpi=jpi_in
+    !
+  end subroutine set_bounds
   !
   subroutine zero_layer(field,jpj,jpi)
     !

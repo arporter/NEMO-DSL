@@ -10,6 +10,7 @@ PROGRAM tra_adv
                        mydomain_update_psy, zwx_psy, zslpx_psy, zslpx_update_psy, &
                        zwx2_psy, mydomain_psy
    USE psy_mod, only : zero_layer, multiply_layer
+   USE psy_mod, only : set_bounds
    implicit none
    REAL*8, ALLOCATABLE, SAVE, DIMENSION(:,:,:,:) :: t3sn, t3ns, t3ew, t3we
    REAL*8, ALLOCATABLE, SAVE, DIMENSION(:,:,:)   :: tsn 
@@ -102,6 +103,9 @@ PROGRAM tra_adv
    END DO
 
    call timer_stop(init_timer)
+
+   ! temporary way to provide dimension information to PSy layer
+   call set_bounds(jpk,jpj,jpi)
 
 !***********************
 !* Start of the synphony
