@@ -246,7 +246,6 @@ contains
     real*8, intent(in) :: zwx(:,:,:)
     integer, intent(in) :: jpk,jpj,jpi
     ! local variables
-    real*8 :: ztra
     integer :: jk,jj,ji
     !
     DO jk = 1, jpk-1
