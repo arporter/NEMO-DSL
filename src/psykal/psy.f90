@@ -4,7 +4,7 @@ implicit none
 !
 private
 public :: set_bounds
-public :: zero_top_layer, zero_bottom_layer, multiply_layer
+public :: zero_top_layer, zero_bottom_layer, multiply_bottom_layer
 public :: zind_psy, zwxy_psy, zslpxy_psy, zslpxy_update_psy, zwxy2_psy, &
           mydomain_update_psy, zwx_psy, zslpx_psy, zslpx_update_psy, &
           zwx2_psy, mydomain_psy
@@ -51,22 +51,21 @@ contains
     !
   end subroutine zero_bottom_layer
   !
-  subroutine multiply_layer(field_out,field_in1,field_in2,jpj,jpi)
+  subroutine multiply_bottom_layer(field_out,field_in1,field_in2)
     !
-    real*8, intent(out) :: field_out(:,:)
-    real*8, intent(in) :: field_in1(:,:), field_in2(:,:)
-    integer, intent(in) :: jpj,jpi
+    real*8, intent(out) :: field_out(jpi,jpj,jpk)
+    real*8, intent(in) :: field_in1(jpi,jpj,jpk), field_in2(jpi,jpj,jpk)
     ! local variables
     integer :: jj,ji
     !
     DO jj=1,jpj
       DO ji=1,jpi
-        field_out(ji,jj) = field_in1(ji,jj) * field_in2(ji,jj)
+        field_out(ji,jj,1) = field_in1(ji,jj,1) * field_in2(ji,jj,1)
       END DO
     END DO
     !
-  end subroutine multiply_layer
-  !   
+  end subroutine multiply_bottom_layer
+  !
   subroutine zind_psy(zind,tsn,ztfreez,rnfmsk,rnfmsk_z,upsmsk,tmask,jpk,jpj,jpi)
     !
     use zind_kern_mod, only : zind_kern

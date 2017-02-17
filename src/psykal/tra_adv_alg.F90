@@ -9,7 +9,7 @@ PROGRAM tra_adv
    USE psy_mod, only : zind_psy, zwxy_psy, zslpxy_psy, zslpxy_update_psy, zwxy2_psy, &
                        mydomain_update_psy, zwx_psy, zslpx_psy, zslpx_update_psy, &
                        zwx2_psy, mydomain_psy
-   USE psy_mod, only : zero_top_layer, zero_bottom_layer, multiply_layer
+   USE psy_mod, only : zero_top_layer, zero_bottom_layer, multiply_bottom_layer
    USE psy_mod, only : set_bounds
    implicit none
    REAL*8, ALLOCATABLE, SAVE, DIMENSION(:,:,:,:) :: t3sn, t3ns, t3ew, t3we
@@ -130,7 +130,7 @@ PROGRAM tra_adv
       call zero_bottom_layer(zslpx)
       call zslpx_psy(zslpx,zwx,jpk,jpj,jpi)
       call zslpx_update_psy(zslpx,zwx,jpk,jpj,jpi)
-      call multiply_layer(zwx(:,:,1),pwn(:,:,1),mydomain(:,:,1),jpj,jpi)
+      call multiply_bottom_layer(zwx,pwn,mydomain)
       call zwx2_psy(zwx,pwn,mydomain,zind,zslpx,jpk,jpj,jpi)
       call mydomain_psy(mydomain,zwx,jpk,jpj,jpi)
 
