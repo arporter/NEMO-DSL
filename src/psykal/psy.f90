@@ -4,22 +4,22 @@ implicit none
 !
 private
 public :: set_bounds
-public :: zero_top_layer, zero_bottom_layer, multiply_bottom_layer
+public :: zero_top_layer, zero_bottom_layer, multiply_top_layer
 public :: zind_psy, zwxy_psy, zslpxy_psy, zslpxy_update_psy, zwxy2_psy, &
           mydomain_update_psy, zwx_psy, zslpx_psy, zslpx_update_psy, &
           zwx2_psy, mydomain_psy
 !
-integer :: jpk, jpj, jpi
+integer :: jpi, jpj, jpk
 !
 contains
   !
-  subroutine set_bounds(jpk_in,jpj_in,jpi_in)
+  subroutine set_bounds(jpi_in,jpj_in,jpk_in)
     !
-    integer, intent(in) :: jpk_in,jpj_in,jpi_in
+    integer, intent(in) :: jpi_in,jpj_in,jpk_in
     !
-    jpk=jpk_in
-    jpj=jpj_in
     jpi=jpi_in
+    jpj=jpj_in
+    jpk=jpk_in
     !
   end subroutine set_bounds
   !
@@ -27,11 +27,11 @@ contains
     !
     real*8, intent(inout) :: field(jpi,jpj,jpk)
     ! local variables
-    integer :: jj,ji
+    integer :: ji,jj
     !
     DO jj=1,jpj
       DO ji=1,jpi
-        field(ji,jj,jpk) = 0.e0
+        field(ji,jj,1) = 0.e0
       END DO
     END DO
     !
@@ -41,22 +41,22 @@ contains
     !
     real*8, intent(inout) :: field(jpi,jpj,jpk)
     ! local variables
-    integer :: jj,ji
+    integer :: ji,jj
     !
     DO jj=1,jpj
       DO ji=1,jpi
-        field(ji,jj,1) = 0.e0
+        field(ji,jj,jpk) = 0.e0
       END DO
     END DO
     !
   end subroutine zero_bottom_layer
   !
-  subroutine multiply_bottom_layer(field_out,field_in1,field_in2)
+  subroutine multiply_top_layer(field_out,field_in1,field_in2)
     !
     real*8, intent(out) :: field_out(jpi,jpj,jpk)
     real*8, intent(in) :: field_in1(jpi,jpj,jpk), field_in2(jpi,jpj,jpk)
     ! local variables
-    integer :: jj,ji
+    integer :: ji,jj
     !
     DO jj=1,jpj
       DO ji=1,jpi
@@ -64,7 +64,7 @@ contains
       END DO
     END DO
     !
-  end subroutine multiply_bottom_layer
+  end subroutine multiply_top_layer
   !
   subroutine zind_psy(zind,tsn,ztfreez,rnfmsk,rnfmsk_z,upsmsk,tmask)
     !
