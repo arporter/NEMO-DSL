@@ -12,7 +12,7 @@ contains
     ! local variables
     real*8 :: z0u, zalpha, zu, zzwx, zzwy, z0v, zv, zdt
     !
-    zdt=1.d0
+    zdt = 1.d0
     z0u = SIGN( 0.5d0, pun(ji,jj,jk) )
     zalpha = 0.5d0 - z0u
     zu  = z0u - 0.5d0 * pun(ji,jj,jk) * zdt
