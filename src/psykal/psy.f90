@@ -31,7 +31,7 @@ contains
     !
     DO jj=1,jpj
       DO ji=1,jpi
-        field(ji,jj,1) = 0.e0
+        field(ji,jj,1) = 0.d0
       END DO
     END DO
     !
@@ -45,7 +45,7 @@ contains
     !
     DO jj=1,jpj
       DO ji=1,jpi
-        field(ji,jj,jpk) = 0.e0
+        field(ji,jj,jpk) = 0.d0
       END DO
     END DO
     !
