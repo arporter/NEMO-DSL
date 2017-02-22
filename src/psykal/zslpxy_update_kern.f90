@@ -4,11 +4,11 @@ implicit none
 !
 contains
   !
-  subroutine zslpxy_update_kern(zslpx,zslpy,zwx,zwy,jk,jj,ji)
+  subroutine zslpxy_update_kern(zslpx,zslpy,zwx,zwy,ji,jj,jk)
     !
     real*8, intent(inout) :: zslpx(:,:,:), zslpy(:,:,:)
     real*8, intent(in)  :: zwx(:,:,:), zwy(:,:,:)
-    integer, intent(in) :: jk,jj,ji
+    integer, intent(in) :: ji,jj,jk
     !
     zslpx(ji,jj,jk) = SIGN( 1.d0, zslpx(ji,jj,jk) ) * MIN(    ABS( zslpx(ji  ,jj,jk) ),   &
          &                                                2.d0*ABS( zwx  (ji-1,jj,jk) ),   &

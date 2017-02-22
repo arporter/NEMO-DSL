@@ -4,11 +4,11 @@ implicit none
 !
 contains
   !
-  subroutine zwx2_kern(zwx,pwn,mydomain,zind,zslpx,jk,jj,ji)
+  subroutine zwx2_kern(zwx,pwn,mydomain,zind,zslpx,ji,jj,jk)
     !
     real*8, intent(out) :: zwx(:,:,:)
     real*8, intent(in) :: pwn(:,:,:), mydomain(:,:,:), zind(:,:,:), zslpx(:,:,:)
-    integer, intent(in) :: jj,ji,jk
+    integer, intent(in) :: ji,jj,jk
     ! local variables
     real*8 :: z0w, zalpha, zw, zzwx, zzwy, zdt, zbtr
     !

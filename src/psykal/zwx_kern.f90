@@ -4,11 +4,11 @@ implicit none
 !
 contains
   !
-  subroutine zwx_kern(zwx,tmask,mydomain,jk,jj,ji)
+  subroutine zwx_kern(zwx,tmask,mydomain,ji,jj,jk)
     !
     real*8, intent(out) :: zwx(:,:,:)
     real*8, intent(in)  :: tmask(:,:,:), mydomain(:,:,:)
-    integer, intent(in) :: jk,jj,ji
+    integer, intent(in) :: ji,jj,jk
     !
     zwx(ji,jj,jk) = tmask(ji,jj,jk) * ( mydomain(ji,jj,jk-1) - mydomain(ji,jj,jk) )
     !

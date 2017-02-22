@@ -75,7 +75,7 @@ contains
     real*8,  intent(in)  :: tmask(jpi,jpj,jpk)
     real*8,  intent(in)  :: ztfreez(jpi,jpj), rnfmsk(jpi,jpj), rnfmsk_z(jpk), upsmsk(jpi,jpj)
     ! local variables
-    integer :: jk,ji,jj
+    integer :: ji,jj,jk
     !
     DO jk = 1, jpk
       DO jj = 1, jpj
@@ -95,12 +95,12 @@ contains
     real*8,  intent(in)  :: mydomain(jpi,jpj,jpk)
     real*8,  intent(in)  :: umask(jpi,jpj,jpk), vmask(jpi,jpj,jpk)
     ! local variables
-    integer :: jk,jj,ji
+    integer :: ji,jj,jk
     !
     DO jk = 1, jpk-1
       DO jj = 1, jpj-1
         DO ji = 1, jpi-1
-          call zwxy_kern(zwx,zwy,mydomain,umask,vmask,jk,jj,ji)
+          call zwxy_kern(zwx,zwy,mydomain,umask,vmask,ji,jj,jk)
         END DO
       END DO
     END DO
@@ -114,12 +114,12 @@ contains
     real*8, intent(out) :: zslpx(jpi,jpj,jpk), zslpy(jpi,jpj,jpk)
     real*8, intent(in)  :: zwx(jpi,jpj,jpk), zwy(jpi,jpj,jpk)
     ! local variables
-    integer :: jk,jj,ji
+    integer :: ji,jj,jk
     !
     DO jk = 1, jpk-1
        DO jj = 2, jpj
           DO ji = 2, jpi
-             call zslpxy_kern(zslpx,zslpy,zwx,zwy,jk,jj,ji)
+             call zslpxy_kern(zslpx,zslpy,zwx,zwy,ji,jj,jk)
           END DO
        END DO
     END DO
@@ -133,12 +133,12 @@ contains
     real*8, intent(inout) :: zslpx(jpi,jpj,jpk), zslpy(jpi,jpj,jpk)
     real*8, intent(in)  :: zwx(jpi,jpj,jpk), zwy(jpi,jpj,jpk)
     ! local variables
-    integer :: jk,jj,ji   
+    integer :: ji,jj,jk
     !
     DO jk = 1, jpk-1
        DO jj = 2, jpj
           DO ji = 2, jpi
-             call zslpxy_update_kern(zslpx,zslpy,zwx,zwy,jk,jj,ji)
+             call zslpxy_update_kern(zslpx,zslpy,zwx,zwy,ji,jj,jk)
           END DO
        END DO
     END DO
@@ -154,12 +154,12 @@ contains
                            mydomain(jpi,jpj,jpk), zind(jpi,jpj,jpk), &
                            zslpx(jpi,jpj,jpk), zslpy(jpi,jpj,jpk)
     ! local variables
-    integer :: jk,jj,ji   
+    integer :: ji,jj,jk
     !
     DO jk = 1, jpk-1
        DO jj = 2, jpj-1
           DO ji = 2, jpi-1
-             call zwxy2_kern(zwx,zwy,pun,pvn,mydomain,zind,zslpx,zslpy,jk,jj,ji)
+             call zwxy2_kern(zwx,zwy,pun,pvn,mydomain,zind,zslpx,zslpy,ji,jj,jk)
           END DO
        END DO
     END DO
@@ -173,12 +173,12 @@ contains
     real*8, intent(inout) :: mydomain(jpi,jpj,jpk)
     real*8, intent(in)    :: zwx(jpi,jpj,jpk), zwy(jpi,jpj,jpk)
     ! local variables
-    integer :: jk,jj,ji
+    integer :: ji,jj,jk
     !
     DO jk = 1, jpk-1
-       DO jj = 2, jpj-1     
+       DO jj = 2, jpj-1
           DO ji = 2, jpi-1
-             call mydomain_update_kern(mydomain,zwx,zwy,jk,jj,ji)
+             call mydomain_update_kern(mydomain,zwx,zwy,ji,jj,jk)
           END DO
        END DO
     END DO
@@ -192,12 +192,12 @@ contains
     real*8, intent(out) :: zwx(jpi,jpj,jpk)
     real*8, intent(in) :: tmask(jpi,jpj,jpk), mydomain(jpi,jpj,jpk)
     ! local variables
-    integer :: jk,jj,ji
+    integer :: ji,jj,jk
     !
     DO jk = 2, jpk-1
        DO jj = 1, jpj
           DO ji = 1, jpi
-             call zwx_kern(zwx,tmask,mydomain,jk,jj,ji)
+             call zwx_kern(zwx,tmask,mydomain,ji,jj,jk)
           END DO
        END DO
     END DO
@@ -211,12 +211,12 @@ contains
     real*8, intent(out) :: zslpx(jpi,jpj,jpk)
     real*8, intent(in) :: zwx(jpi,jpj,jpk)
     ! local variables
-    integer :: jk,jj,ji
+    integer :: ji,jj,jk
     !
     DO jk = 2, jpk-1
        DO jj = 1, jpj
           DO ji = 1, jpi
-             call zslpx_kern(zslpx,zwx,jk,jj,ji)
+             call zslpx_kern(zslpx,zwx,ji,jj,jk)
           END DO
        END DO
     END DO
@@ -230,12 +230,12 @@ contains
     real*8, intent(inout) :: zslpx(jpi,jpj,jpk)
     real*8, intent(in) :: zwx(jpi,jpj,jpk)
     ! local variables
-    integer :: jk,jj,ji
+    integer :: ji,jj,jk
     !
     DO jk = 2, jpk-1     
        DO jj = 1, jpj
           DO ji = 1, jpi
-             call zslpx_update_kern(zslpx,zwx,jk,jj,ji)
+             call zslpx_update_kern(zslpx,zwx,ji,jj,jk)
           END DO
        END DO
     END DO
@@ -250,12 +250,12 @@ contains
     real*8, intent(in) :: pwn(jpi,jpj,jpk), mydomain(jpi,jpj,jpk), &
                           zind(jpi,jpj,jpk), zslpx(jpi,jpj,jpk)
     ! local variables
-    integer :: jk,jj,ji
+    integer :: ji,jj,jk
     !
     DO jk = 2, jpk
        DO jj = 2, jpj-1
           DO ji = 2, jpi-1
-             call zwx2_kern(zwx,pwn,mydomain,zind,zslpx,jk,jj,ji)
+             call zwx2_kern(zwx,pwn,mydomain,zind,zslpx,ji,jj,jk)
           END DO
        END DO
     END DO
@@ -269,12 +269,12 @@ contains
     real*8, intent(out) :: mydomain(jpi,jpj,jpk)
     real*8, intent(in) :: zwx(jpi,jpj,jpk)
     ! local variables
-    integer :: jk,jj,ji
+    integer :: ji,jj,jk
     !
     DO jk = 1, jpk-1
        DO jj = 2, jpj-1     
           DO ji = 2, jpi-1
-             call mydomain_kern(mydomain,zwx,jk,jj,ji)
+             call mydomain_kern(mydomain,zwx,ji,jj,jk)
           END DO
        END DO
     END DO
