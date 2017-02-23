@@ -2,7 +2,7 @@
    !! ***  traadv kernel extracted from the NEMO software (http://www.nemo-ocean.eu ) ***
    !! ***          governed by the CeCILL licence (http://www.cecill.info)            ***
    !!                                                   
-   !! ***                             IS-ENES2 - CMCC/STCF                            ***
+   !! ***                             IS-ENES2 - CMCC/STFC                            ***
    !!=====================================================================================
 PROGRAM tra_adv
    USE dl_timer, only: timer_init, timer_register, timer_start, timer_stop, timer_report
@@ -105,7 +105,7 @@ PROGRAM tra_adv
    call set_bounds(jpi,jpj,jpk)
 
 !***********************
-!* Start of the synphony
+!* Start of the symphony
 !***********************
    call timer_start(step_timer)
 
