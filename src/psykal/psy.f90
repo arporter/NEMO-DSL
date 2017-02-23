@@ -22,6 +22,12 @@ contains
   !
   subroutine tracer_advection(zind,tsn,ztfreez,rnfmsk,rnfmsk_z,upsmsk, &
        tmask,zwx,zwy,mydomain,umask,vmask,zslpx,zslpy,pun,pvn,pwn)
+    !
+    use zind_kern_mod, only : zind_kern
+    use zwxy_kern_mod, only : zwxy_kern
+    use zslpxy_kern_mod, only : zslpxy_kern
+    use zslpxy_update_kern_mod, only : zslpxy_update_kern
+    !
     ! RF all intent out's here are actually local to this call
     real*8, intent(out) :: zind(jpi,jpj,jpk), zwx(jpi,jpj,jpk), &
          zwy(jpi,jpj,jpk), zslpx(jpi,jpj,jpk), zslpy(jpi,jpj,jpk)
@@ -30,15 +36,65 @@ contains
          umask(jpi,jpj,jpk), vmask(jpi,jpj,jpk), pun(jpi,jpj,jpk), &
          pvn(jpi,jpj,jpk), pwn(jpi,jpj,jpk)
     real*8, intent(inout) :: mydomain(jpi,jpj,jpk)
+    ! local variables
+    integer :: ji,jj,jk
     !
-    call zind_psy(zind,tsn,ztfreez,rnfmsk,rnfmsk_z,upsmsk,tmask)
-    call zero_bottom_layer(zwx)
-    call zero_bottom_layer(zwy)
-    call zwxy_psy(zwx,zwy,mydomain,umask,vmask)
-    call zero_bottom_layer(zslpx)
-    call zero_bottom_layer(zslpy)
-    call zslpxy_psy(zslpx,zslpy,zwx,zwy)
-    call zslpxy_update_psy(zslpx,zslpy,zwx,zwy)
+    !call zind_psy(zind,tsn,ztfreez,rnfmsk,rnfmsk_z,upsmsk,tmask)
+    DO jk = 1, jpk
+      DO jj = 1, jpj
+        DO ji = 1, jpi
+          call zind_kern(zind,tsn,ztfreez,rnfmsk,rnfmsk_z,upsmsk,tmask,ji,jj,jk)
+        END DO
+      END DO
+    END DO
+    !call zero_bottom_layer(zwx)
+    DO jj=1,jpj
+      DO ji=1,jpi
+        zwx(ji,jj,jpk) = 0.d0
+      END DO
+    END DO
+    !call zero_bottom_layer(zwy)
+    DO jj=1,jpj
+      DO ji=1,jpi
+        zwy(ji,jj,jpk) = 0.d0
+      END DO
+    END DO
+    !call zwxy_psy(zwx,zwy,mydomain,umask,vmask)
+    DO jk = 1, jpk-1
+      DO jj = 1, jpj-1
+        DO ji = 1, jpi-1
+          call zwxy_kern(zwx,zwy,mydomain,umask,vmask,ji,jj,jk)
+        END DO
+      END DO
+    END DO
+    !call zero_bottom_layer(zslpx)
+    DO jj=1,jpj
+      DO ji=1,jpi
+        zslpx(ji,jj,jpk) = 0.d0
+      END DO
+    END DO
+    !call zero_bottom_layer(zslpy)
+    DO jj=1,jpj
+      DO ji=1,jpi
+        zslpy(ji,jj,jpk) = 0.d0
+      END DO
+    END DO
+    !call zslpxy_psy(zslpx,zslpy,zwx,zwy)
+    DO jk = 1, jpk-1
+      DO jj = 2, jpj
+        DO ji = 2, jpi
+          call zslpxy_kern(zslpx,zslpy,zwx,zwy,ji,jj,jk)
+        END DO
+      END DO
+    END DO
+    !call zslpxy_update_psy(zslpx,zslpy,zwx,zwy)
+    DO jk = 1, jpk-1
+       DO jj = 2, jpj
+          DO ji = 2, jpi
+             call zslpxy_update_kern(zslpx,zslpy,zwx,zwy,ji,jj,jk)
+          END DO
+       END DO
+    END DO
     call zwxy2_psy(zwx,zwy,pun,pvn,mydomain,zind,zslpx,zslpy)
     call mydomain_update_psy(mydomain,zwx,zwy)
     call zero_top_layer(zwx)
