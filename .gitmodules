@@ -1,3 +1,6 @@
 [submodule "src/shared/dl_timer"]
 	path = src/shared/dl_timer
 	url = https://bitbucket.org/apeg/dl_timer
+[submodule "src/shared/dl_esm_inf"]
+	path = src/shared/dl_esm_inf
+	url = git@github.com:stfc/dl_esm_inf.git

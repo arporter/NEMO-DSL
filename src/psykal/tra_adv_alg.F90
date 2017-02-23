@@ -11,6 +11,9 @@ PROGRAM tra_adv
                        zwx2_psy, mydomain_psy
    USE psy_mod, only : zero_top_layer, zero_bottom_layer, multiply_top_layer
    USE psy_mod, only : set_bounds
+   !> Modules from the dl-esm-inf library
+   USE kind_params_mod, only: wp
+   USE grid_mod
    implicit none
    REAL*8, ALLOCATABLE, SAVE, DIMENSION(:,:,:,:) :: t3sn, t3ns, t3ew, t3we
    REAL*8, ALLOCATABLE, SAVE, DIMENSION(:,:,:)   :: tsn 
@@ -26,6 +29,10 @@ PROGRAM tra_adv
    CHARACTER(len=10)                             :: env
    !> Timer indexes, one for initialisation, one for the 'time-stepping'
    INTEGER :: init_timer, step_timer
+   !> The grid on which our fields are defined
+   type(grid_type), target :: model_grid
+   !> The (constant) grid resolution
+   real(wp) :: dx=1.0d0, dy=1.0d0, dz=1.0d0
 
    CALL get_environment_variable("JPI", env)
    READ ( env, '(i10)' ) jpi
@@ -65,7 +72,20 @@ PROGRAM tra_adv
    ALLOCATE( tsn(jpi,jpj,jpk))
 
 
-! arrays initialization
+   ! Create the model grid. We use a NE offset (i.e. the U, V and F
+   ! points immediately to the North and East of a T point all have the
+   ! same i,j index).  This is the same offset scheme as used by NEMO.
+   model_grid = grid_type(ARAKAWA_C, &
+                          !  BC_PERIODIC, BC_NON_PERIODIC ??
+                          (/BC_EXTERNAL,BC_EXTERNAL,BC_NONE/), &
+                          OFFSET_NE)
+
+   tmask(:,:,:) = 1.0d0 ! all inner cells
+
+   ! Having specified the T points mask, we can set up mesh parameters
+   call grid_init(model_grid, jpi, jpj, jpk, dx, dy, dz, tmask)
+
+   ! arrays initialization
 
    r = jpi*jpj*jpk
 
