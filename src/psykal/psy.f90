@@ -4,10 +4,7 @@ implicit none
 !
 private
 public :: set_bounds
-public :: zero_top_layer, zero_bottom_layer, multiply_top_layer
-public :: zind_psy, zwxy_psy, zslpxy_psy, zslpxy_update_psy, zwxy2_psy, &
-          mydomain_update_psy, zwx_psy, zslpx_psy, zslpx_update_psy, &
-          zwx2_psy, mydomain_psy
+public :: tracer_advection
 !
 integer :: jpi, jpj, jpk
 !
@@ -23,6 +20,39 @@ contains
     !
   end subroutine set_bounds
   !
+  subroutine tracer_advection(zind,tsn,ztfreez,rnfmsk,rnfmsk_z,upsmsk, &
+       tmask,zwx,zwy,mydomain,umask,vmask,zslpx,zslpy,pun,pvn,pwn)
+    ! RF all intent out's here are actually local to this call
+    real*8, intent(out) :: zind(jpi,jpj,jpk), zwx(jpi,jpj,jpk), &
+         zwy(jpi,jpj,jpk), zslpx(jpi,jpj,jpk), zslpy(jpi,jpj,jpk)
+    real*8, intent(in)  :: tsn(jpi,jpj,jpk), ztfreez(jpi,jpj), &
+         rnfmsk(jpi,jpj), rnfmsk_z(jpk), upsmsk(jpi,jpj), tmask(jpi,jpj,jpk), &
+         umask(jpi,jpj,jpk), vmask(jpi,jpj,jpk), pun(jpi,jpj,jpk), &
+         pvn(jpi,jpj,jpk), pwn(jpi,jpj,jpk)
+    real*8, intent(inout) :: mydomain(jpi,jpj,jpk)
+    !
+    call zind_psy(zind,tsn,ztfreez,rnfmsk,rnfmsk_z,upsmsk,tmask)
+    call zero_bottom_layer(zwx)
+    call zero_bottom_layer(zwy)
+    call zwxy_psy(zwx,zwy,mydomain,umask,vmask)
+    call zero_bottom_layer(zslpx)
+    call zero_bottom_layer(zslpy)
+    call zslpxy_psy(zslpx,zslpy,zwx,zwy)
+    call zslpxy_update_psy(zslpx,zslpy,zwx,zwy)
+    call zwxy2_psy(zwx,zwy,pun,pvn,mydomain,zind,zslpx,zslpy)
+    call mydomain_update_psy(mydomain,zwx,zwy)
+    call zero_top_layer(zwx)
+    call zero_bottom_layer(zwx)
+    call zwx_psy(zwx,tmask,mydomain)
+    call zero_top_layer(zslpx)
+    call zslpx_psy(zslpx,zwx)
+    call zslpx_update_psy(zslpx,zwx)
+    call multiply_top_layer(zwx,pwn,mydomain)
+    call zwx2_psy(zwx,pwn,mydomain,zind,zslpx)
+    call mydomain_psy(mydomain,zwx)
+    !
+  end subroutine tracer_advection
+  
   subroutine zero_top_layer(field)
     !
     real*8, intent(inout) :: field(jpi,jpj,jpk)
