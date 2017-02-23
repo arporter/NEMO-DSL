@@ -27,6 +27,13 @@ contains
     use zwxy_kern_mod, only : zwxy_kern
     use zslpxy_kern_mod, only : zslpxy_kern
     use zslpxy_update_kern_mod, only : zslpxy_update_kern
+    use zwxy2_kern_mod, only : zwxy2_kern
+    use mydomain_update_kern_mod, only : mydomain_update_kern
+    use zwx_kern_mod, only : zwx_kern
+    use zslpx_kern_mod, only : zslpx_kern
+    use zslpx_update_kern_mod, only : zslpx_update_kern
+    use zwx2_kern_mod, only : zwx2_kern
+    use mydomain_kern_mod, only : mydomain_kern
     !
     ! RF all intent out's here are actually local to this call
     real*8, intent(out) :: zind(jpi,jpj,jpk), zwx(jpi,jpj,jpk), &
@@ -89,23 +96,92 @@ contains
     END DO
     !call zslpxy_update_psy(zslpx,zslpy,zwx,zwy)
     DO jk = 1, jpk-1
-       DO jj = 2, jpj
-          DO ji = 2, jpi
-             call zslpxy_update_kern(zslpx,zslpy,zwx,zwy,ji,jj,jk)
+      DO jj = 2, jpj
+        DO ji = 2, jpi
+          call zslpxy_update_kern(zslpx,zslpy,zwx,zwy,ji,jj,jk)
+        END DO
+      END DO
+    END DO
+    !call zwxy2_psy(zwx,zwy,pun,pvn,mydomain,zind,zslpx,zslpy)
+    DO jk = 1, jpk-1
+      DO jj = 2, jpj-1
+        DO ji = 2, jpi-1
+          call zwxy2_kern(zwx,zwy,pun,pvn,mydomain,zind,zslpx,zslpy,ji,jj,jk)
+        END DO
+      END DO
+    END DO
+    !call mydomain_update_psy(mydomain,zwx,zwy)
+    DO jk = 1, jpk-1
+      DO jj = 2, jpj-1
+        DO ji = 2, jpi-1
+          call mydomain_update_kern(mydomain,zwx,zwy,ji,jj,jk)
+        END DO
+      END DO
+    END DO
+    !call zero_top_layer(zwx)
+    DO jj=1,jpj
+      DO ji=1,jpi
+        zwx(ji,jj,1) = 0.d0
+      END DO
+    END DO
+    !call zero_bottom_layer(zwx)
+    DO jj=1,jpj
+      DO ji=1,jpi
+        zwx(ji,jj,jpk) = 0.d0
+      END DO
+    END DO
+    !call zwx_psy(zwx,tmask,mydomain)
+    DO jk = 2, jpk-1
+       DO jj = 1, jpj
+          DO ji = 1, jpi
+             call zwx_kern(zwx,tmask,mydomain,ji,jj,jk)
           END DO
        END DO
     END DO
-    call zwxy2_psy(zwx,zwy,pun,pvn,mydomain,zind,zslpx,zslpy)
-    call mydomain_update_psy(mydomain,zwx,zwy)
-    call zero_top_layer(zwx)
-    call zero_bottom_layer(zwx)
-    call zwx_psy(zwx,tmask,mydomain)
-    call zero_top_layer(zslpx)
-    call zslpx_psy(zslpx,zwx)
-    call zslpx_update_psy(zslpx,zwx)
-    call multiply_top_layer(zwx,pwn,mydomain)
-    call zwx2_psy(zwx,pwn,mydomain,zind,zslpx)
-    call mydomain_psy(mydomain,zwx)
+    !call zero_top_layer(zslpx)
+    DO jj=1,jpj
+      DO ji=1,jpi
+        zslpx(ji,jj,1) = 0.d0
+      END DO
+    END DO
+    !call zslpx_psy(zslpx,zwx)
+    DO jk = 2, jpk-1
+      DO jj = 1, jpj
+        DO ji = 1, jpi
+          call zslpx_kern(zslpx,zwx,ji,jj,jk)
+        END DO
+      END DO
+    END DO
+    !call zslpx_update_psy(zslpx,zwx)
+    DO jk = 2, jpk-1     
+      DO jj = 1, jpj
+        DO ji = 1, jpi
+          call zslpx_update_kern(zslpx,zwx,ji,jj,jk)
+        END DO
+      END DO
+    END DO
+    !call multiply_top_layer(zwx,pwn,mydomain)
+    DO jj=1,jpj
+      DO ji=1,jpi
+        zwx(ji,jj,1) = pwn(ji,jj,1) * mydomain(ji,jj,1)
+      END DO
+    END DO
+    !call zwx2_psy(zwx,pwn,mydomain,zind,zslpx)
+    DO jk = 2, jpk
+      DO jj = 2, jpj-1
+        DO ji = 2, jpi-1
+          call zwx2_kern(zwx,pwn,mydomain,zind,zslpx,ji,jj,jk)
+        END DO
+      END DO
+    END DO
+    !call mydomain_psy(mydomain,zwx)
+    DO jk = 1, jpk-1
+      DO jj = 2, jpj-1     
+        DO ji = 2, jpi-1
+          call mydomain_kern(mydomain,zwx,ji,jj,jk)
+        END DO
+      END DO
+    END DO
     !
   end subroutine tracer_advection
   
