@@ -112,7 +112,7 @@ PROGRAM tra_adv
    DO jt = 1, it
 
       call tracer_advection(zind,tsn,ztfreez,rnfmsk,rnfmsk_z,upsmsk, &
-           tmask,zwx,zwy,mydomain,umask,vmask,zslpx,zslpy,pun,pvn,pwn)
+                            zwx,zwy,mydomain,zslpx,zslpy,pun,pvn,pwn)
 
       !PSyclone ... this is what the algorithm code would look like
       !call invoke (
