@@ -2,19 +2,16 @@
    !! ***  traadv kernel extracted from the NEMO software (http://www.nemo-ocean.eu ) ***
    !! ***          governed by the CeCILL licence (http://www.cecill.info)            ***
    !!                                                   
-   !! ***                             IS-ENES2 - CMCC/STCF                            ***
+   !! ***                             IS-ENES2 - CMCC/STFC                            ***
    !!=====================================================================================
 PROGRAM tra_adv
    USE dl_timer, only: timer_init, timer_register, timer_start, timer_stop, timer_report
-   USE psy_mod, only : zind_psy, zwxy_psy, zslpxy_psy, zslpxy_update_psy, zwxy2_psy, &
-                       mydomain_update_psy, zwx_psy, zslpx_psy, zslpx_update_psy, &
-                       zwx2_psy, mydomain_psy
-   USE psy_mod, only : zero_top_layer, zero_bottom_layer, multiply_top_layer
-   USE psy_mod, only : set_bounds
    !> Modules from the dl-esm-inf library
    USE kind_params_mod, only: wp
    USE grid_mod
    USE field_mod
+   !PSyclone ... we would declare the links to the Kernel metadata here
+   USE psy_mod, only : tracer_advection, set_bounds
    implicit none
    REAL*8, ALLOCATABLE, SAVE, DIMENSION(:,:,:) :: tmask_input
    !> 'Now' ocean temperature/salinity (in NEMO this is a 4D array with the fourth
@@ -108,31 +105,37 @@ PROGRAM tra_adv
    call set_bounds(jpi,jpj,jpk)
 
 !***********************
-!* Start of the synphony
+!* Start of the symphony
 !***********************
    call timer_start(step_timer)
 
    DO jt = 1, it
 
-      call zind_psy(zind,tsn,ztfreez,rnfmsk,rnfmsk_z,upsmsk,tmask)
-      call zero_bottom_layer(zwx)
-      call zero_bottom_layer(zwy)
-      call zwxy_psy(zwx,zwy,mydomain,umask,vmask)
-      call zero_bottom_layer(zslpx)
-      call zero_bottom_layer(zslpy)
-      call zslpxy_psy(zslpx,zslpy,zwx,zwy)
-      call zslpxy_update_psy(zslpx,zslpy,zwx,zwy)
-      call zwxy2_psy(zwx,zwy,pun,pvn,mydomain,zind,zslpx,zslpy)
-      call mydomain_update_psy(mydomain,zwx,zwy)
-      call zero_top_layer(zwx)
-      call zero_bottom_layer(zwx)
-      call zwx_psy(zwx,tmask,mydomain)
-      call zero_top_layer(zslpx)
-      call zslpx_psy(zslpx,zwx)
-      call zslpx_update_psy(zslpx,zwx)
-      call multiply_top_layer(zwx,pwn,mydomain)
-      call zwx2_psy(zwx,pwn,mydomain,zind,zslpx)
-      call mydomain_psy(mydomain,zwx)
+      call tracer_advection(zind,tsn,ztfreez,rnfmsk,rnfmsk_z,upsmsk, &
+           tmask,zwx,zwy,mydomain,umask,vmask,zslpx,zslpy,pun,pvn,pwn)
+
+      !PSyclone ... this is what the algorithm code would look like
+      !call invoke (
+      !  zind_kern(zind,tsn,ztfreez,rnfmsk,rnfmsk_z,upsmsk,tmask),
+      !  zero_bottom_layer(zwx),
+      !  zero_bottom_layer(zwy),
+      !  zwxy_kern(zwx,zwy,mydomain,umask,vmask),
+      !  zero_bottom_layer(zslpx),
+      !  zero_bottom_layer(zslpy),
+      !  zslpxy_kern(zslpx,zslpy,zwx,zwy),
+      !  zslpxy_update_kern(zslpx,zslpy,zwx,zwy),
+      !  zwxy2_kern(zwx,zwy,pun,pvn,mydomain,zind,zslpx,zslpy),
+      !  mydomain_update_kern(mydomain,zwx,zwy),
+      !  zero_top_layer(zwx),
+      !  zero_bottom_layer(zwx),
+      !  zwx_kern(zwx,tmask,mydomain),
+      !  zero_top_layer(zslpx),
+      !  zslpx_kern(zslpx,zwx),
+      !  zslpx_update_kern(zslpx,zwx),
+      !  multiply_top_layer(zwx,pwn,mydomain),
+      !  zwx2_kern(zwx,pwn,mydomain,zind,zslpx),
+      !  mydomain_kern(mydomain,zwx),
+      !  name="tracer_advection")
 
   END DO
 
