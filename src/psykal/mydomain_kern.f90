@@ -4,15 +4,15 @@ implicit none
 !
 contains
   !
-  subroutine mydomain_kern(mydomain,zbtr,zwx,jk,jj,ji)
+  subroutine mydomain_kern(mydomain,zwx,ji,jj,jk)
     !
     real*8, intent(out) :: mydomain(:,:,:)
     real*8, intent(in)  :: zwx(:,:,:)
-    real*8, intent(in) :: zbtr
-    integer, intent(in) :: jk,jj,ji
+    integer, intent(in) :: ji,jj,jk
     ! local variables
-    real*8 :: ztra
+    real*8 :: ztra, zbtr
     !
+    zbtr = 1.d0
     ztra = - zbtr * ( zwx(ji,jj,jk) - zwx(ji,jj,jk+1) )
     mydomain(ji,jj,jk) = ztra
     !

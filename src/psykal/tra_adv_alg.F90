@@ -9,7 +9,8 @@ PROGRAM tra_adv
    USE psy_mod, only : zind_psy, zwxy_psy, zslpxy_psy, zslpxy_update_psy, zwxy2_psy, &
                        mydomain_update_psy, zwx_psy, zslpx_psy, zslpx_update_psy, &
                        zwx2_psy, mydomain_psy
-   USE psy_mod, only : zero_layer, multiply_layer
+   USE psy_mod, only : zero_top_layer, zero_bottom_layer, multiply_top_layer
+   USE psy_mod, only : set_bounds
    implicit none
    REAL*8, ALLOCATABLE, SAVE, DIMENSION(:,:,:,:) :: t3sn, t3ns, t3ew, t3we
    REAL*8, ALLOCATABLE, SAVE, DIMENSION(:,:,:)   :: tsn 
@@ -17,7 +18,7 @@ PROGRAM tra_adv
    REAL*8, ALLOCATABLE, SAVE, DIMENSION(:,:,:)   :: mydomain, zslpx, zslpy, zwx, zwy, umask, vmask, tmask, zind
    REAL*8, ALLOCATABLE, SAVE, DIMENSION(:,:)     :: ztfreez, rnfmsk, upsmsk
    REAL*8, ALLOCATABLE, SAVE, DIMENSION(:)       :: rnfmsk_z
-   REAL*8                                        :: zice, zu, z0u, zzwx, zv, z0v, zzwy, ztra, zbtr, zdt, zalpha
+   REAL*8                                        :: zice, zu, z0u, zzwx, zv, z0v, zzwy, ztra, zalpha
    REAL*8                                        :: r
    REAL*8                                        :: zw, z0w
    INTEGER                                       :: jpi, jpj, jpk, ji, jj, jk, jt
@@ -103,6 +104,9 @@ PROGRAM tra_adv
 
    call timer_stop(init_timer)
 
+   ! temporary way to provide dimension information to PSy layer
+   call set_bounds(jpi,jpj,jpk)
+
 !***********************
 !* Start of the synphony
 !***********************
@@ -110,29 +114,25 @@ PROGRAM tra_adv
 
    DO jt = 1, it
 
-      call zind_psy(zind,tsn,ztfreez,rnfmsk,rnfmsk_z,upsmsk,tmask,jpk,jpj,jpi)
-      call zero_layer(zwx(:,:,jpk),jpj,jpi)
-      call zero_layer(zwy(:,:,jpk),jpj,jpi)
-      call zwxy_psy(zwx,zwy,mydomain,umask,vmask,jpk,jpj,jpi)
-      call zero_layer(zslpx(:,:,jpk),jpj,jpi)
-      call zero_layer(zslpy(:,:,jpk),jpj,jpi)
-      call zslpxy_psy(zslpx,zslpy,zwx,zwy,jpk,jpj,jpi)
-      call zslpxy_update_psy(zslpx,zslpy,zwx,zwy,jpk,jpj,jpi)
-      zdt=1
-      call zwxy2_psy(zwx,zwy,zdt,pun,pvn,mydomain,zind,zslpx,zslpy,jpk,jpj,jpi)
-      call mydomain_update_psy(mydomain,zwx,zwy,jpk,jpj,jpi)
-      call zero_layer(zwx(:,:,1),jpj,jpi)
-      call zero_layer(zwx(:,:,jpk),jpj,jpi)
-      call zwx_psy(zwx,tmask,mydomain,jpk,jpj,jpi)
-      call zero_layer(zslpx(:,:,1),jpj,jpi)
-      call zslpx_psy(zslpx,zwx,jpk,jpj,jpi)
-      call zslpx_update_psy(zslpx,zwx,jpk,jpj,jpi)
-      call multiply_layer(zwx(:,:,1),pwn(:,:,1),mydomain(:,:,1),jpj,jpi)
-      zdt  = 1
-      zbtr = 1.
-      call zwx2_psy(zwx,zdt,zbtr,pwn,mydomain,zind,zslpx,jpk,jpj,jpi)
-      zbtr = 1.
-      call mydomain_psy(mydomain,zbtr,zwx,jpk,jpj,jpi)
+      call zind_psy(zind,tsn,ztfreez,rnfmsk,rnfmsk_z,upsmsk,tmask)
+      call zero_bottom_layer(zwx)
+      call zero_bottom_layer(zwy)
+      call zwxy_psy(zwx,zwy,mydomain,umask,vmask)
+      call zero_bottom_layer(zslpx)
+      call zero_bottom_layer(zslpy)
+      call zslpxy_psy(zslpx,zslpy,zwx,zwy)
+      call zslpxy_update_psy(zslpx,zslpy,zwx,zwy)
+      call zwxy2_psy(zwx,zwy,pun,pvn,mydomain,zind,zslpx,zslpy)
+      call mydomain_update_psy(mydomain,zwx,zwy)
+      call zero_top_layer(zwx)
+      call zero_bottom_layer(zwx)
+      call zwx_psy(zwx,tmask,mydomain)
+      call zero_top_layer(zslpx)
+      call zslpx_psy(zslpx,zwx)
+      call zslpx_update_psy(zslpx,zwx)
+      call multiply_top_layer(zwx,pwn,mydomain)
+      call zwx2_psy(zwx,pwn,mydomain,zind,zslpx)
+      call mydomain_psy(mydomain,zwx)
 
   END DO
 
