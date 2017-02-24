@@ -11,7 +11,7 @@ PROGRAM tra_adv
    USE grid_mod
    USE field_mod
    !PSyclone ... we would declare the links to the Kernel metadata here
-   USE psy_mod, only : tracer_advection, set_bounds
+   USE psy_mod, only : tracer_advection
    implicit none
    REAL*8, ALLOCATABLE, SAVE, DIMENSION(:,:,:) :: tmask_input
    !> 'Now' ocean temperature/salinity (in NEMO this is a 4D array with the fourth
@@ -100,9 +100,6 @@ PROGRAM tra_adv
    call init_fields()
 
    call timer_stop(init_timer)
-
-   ! temporary way to provide dimension information to PSy layer
-   call set_bounds(jpi,jpj,jpk)
 
 !***********************
 !* Start of the symphony

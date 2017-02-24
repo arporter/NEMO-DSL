@@ -3,23 +3,12 @@ module psy_mod
 implicit none
 !
 private
-public :: set_bounds
 public :: tracer_advection
 !
 integer :: jpi, jpj, jpk
 !
 contains
-  !
-  subroutine set_bounds(jpi_in,jpj_in,jpk_in)
-    !
-    integer, intent(in) :: jpi_in,jpj_in,jpk_in
-    !
-    jpi=jpi_in
-    jpj=jpj_in
-    jpk=jpk_in
-    !
-  end subroutine set_bounds
-  !
+
   subroutine tracer_advection(zind,tsn,ztfreez,rnfmsk,rnfmsk_z,upsmsk, &
                               zwx,zwy,mydomain,zslpx,zslpy,pun,pvn,pwn)
     ! Infrastructure modules
@@ -53,6 +42,11 @@ contains
     ! this to access grid-properties (such as masks) required by the
     ! kernels
     grid => tsn%grid
+
+    jpi = grid%simulation_domain%xstop
+    jpj = grid%simulation_domain%ystop
+    jpk = grid%nlevels
+    write (*,*) jpi, jpj, jpk
 
     DO jk = 1, jpk
       DO jj = 1, jpj
