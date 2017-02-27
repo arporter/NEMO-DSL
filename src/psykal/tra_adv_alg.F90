@@ -84,8 +84,9 @@ PROGRAM tra_adv
    mydomain = r3d_field(model_grid, T_POINTS)
    zwx = r3d_field(model_grid, U_POINTS)
    zwy = r3d_field(model_grid, V_POINTS)
-   zslpx = r3d_field(model_grid, U_POINTS)
-   zslpy = r3d_field(model_grid, V_POINTS)
+   ! Slopes of the above fields, evaluated at T points
+   zslpx = r3d_field(model_grid, T_POINTS)
+   zslpy = r3d_field(model_grid, T_POINTS)
    !> Ocean velocity components
    pun = r3d_field(model_grid, U_POINTS)
    pvn = r3d_field(model_grid, V_POINTS)
@@ -102,9 +103,7 @@ PROGRAM tra_adv
    upsmsk = r2d_field(model_grid, T_POINTS)
    tsn = r3d_field(model_grid, T_POINTS)
 
-   ! Pass the dimensions of the *internal* region to the initialisation
-   ! routine so that we get the same values as used in the original
-   ! version of the kernel.
+   ! Populate these fields with values
    call init_fields()
 
    call timer_stop(init_timer)
@@ -121,10 +120,10 @@ PROGRAM tra_adv
 
       !PSyclone ... this is what the algorithm code would look like
       !call invoke (
-      !  zind_kern(zind,tsn,ztfreez,rnfmsk,rnfmsk_z,upsmsk,tmask),
+      !  zind_kern(zind,tsn,ztfreez,rnfmsk,rnfmsk_z,upsmsk),
       !  zero_bottom_layer(zwx),
       !  zero_bottom_layer(zwy),
-      !  zwxy_kern(zwx,zwy,mydomain,umask,vmask),
+      !  zwxy_kern(zwx,zwy,mydomain),
       !  zero_bottom_layer(zslpx),
       !  zero_bottom_layer(zslpy),
       !  zslpxy_kern(zslpx,zslpy,zwx,zwy),
@@ -133,7 +132,7 @@ PROGRAM tra_adv
       !  mydomain_update_kern(mydomain,zwx,zwy),
       !  zero_top_layer(zwx),
       !  zero_bottom_layer(zwx),
-      !  zwx_kern(zwx,tmask,mydomain),
+      !  zwx_kern(zwx,mydomain),
       !  zero_top_layer(zslpx),
       !  zslpx_kern(zslpx,zwx),
       !  zslpx_update_kern(zslpx,zwx),
