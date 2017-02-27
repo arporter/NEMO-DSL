@@ -13,39 +13,42 @@ PROGRAM tra_adv
    !PSyclone ... we would declare the links to the Kernel metadata here
    USE psy_mod, only : tracer_advection
    implicit none
+   !> The 'input' T-mask that would define the simulation domain
    REAL*8, ALLOCATABLE, SAVE, DIMENSION(:,:,:) :: tmask_input
-   !> 'Now' ocean temperature/salinity (in NEMO this is a 4D array with the fourth
-   !! dimension holding the tracer index)
-   type(r3d_field) :: tsn 
-   !REAL*8, ALLOCATABLE, SAVE, DIMENSION(:,:,:)   :: tsn 
-   !> Three ocean velocity components
-   type(r3d_field) :: pun, pvn, pwn
-   !REAL*8, ALLOCATABLE, SAVE, DIMENSION(:,:,:)   :: pun, pvn, pwn
-   type(r3d_field) :: mydomain, zslpx, zslpy, zwx, zwy, zind
-   !REAL*8, ALLOCATABLE, SAVE, DIMENSION(:,:,:) :: mydomain, zslpx, zslpy, zwx, zwy, umask, vmask, tmask, zind
-   type(r2d_field) :: ztfreez, rnfmsk, upsmsk
-   !REAL*8, ALLOCATABLE, SAVE, DIMENSION(:,:) :: ztfreez, rnfmsk, upsmsk
-   type(r1d_field) :: rnfmsk_z
-   !REAL*8, ALLOCATABLE, SAVE, DIMENSION(:) :: rnfmsk_z
-   REAL*8                                        :: zice, zu, z0u, zzwx, zv, z0v, zzwy, ztra, zalpha
-   REAL*8                                        :: zw, z0w
-   INTEGER                                       :: jpi, jpj, jpk, jt
-   INTEGER                                       :: jpi_internal, jpj_internal
-   INTEGER*8                                     :: it
-   CHARACTER(len=10)                             :: env
-   !> Timer indexes, one for initialisation, one for the 'time-stepping'
-   INTEGER :: init_timer, step_timer
    !> The grid on which our fields are defined
    type(grid_type), target :: model_grid
+   !> 'Now' ocean temperature/salinity (in NEMO this is a 4D array with the fourth
+   !! dimension holding the tracer index)
+   type(r3d_field), save :: tsn 
+   !> Three ocean velocity components
+   type(r3d_field), save :: pun, pvn, pwn
+   type(r3d_field), save :: mydomain, zslpx, zslpy, zwx, zwy, zind
+   type(r2d_field), save :: ztfreez, rnfmsk, upsmsk
+   type(r1d_field), save :: rnfmsk_z
+   REAL*8                :: zice, zu, z0u, zzwx, zv, z0v, zzwy, ztra, zalpha
+   REAL*8                :: zw, z0w
+   INTEGER               :: jpi=0, jpj=0, jpk=0, jt=0
+   INTEGER               :: jpi_internal, jpj_internal
+   INTEGER*8             :: it
+   CHARACTER(len=10)     :: env
+   !> Timer indices, one for initialisation, one for the 'time-stepping'
+   INTEGER :: init_timer, step_timer
    !> The (constant) grid resolution
    real(wp) :: dx=1.0d0, dy=1.0d0, dz=1.0d0
 
    CALL get_environment_variable("JPI", env)
    READ ( env, '(i10)' ) jpi
-   jpi_internal = jpi - 1
+   ! Add one to user-specified size of domain. This is because the
+   ! dl-esm-inf infrastructure assumes that there is a shell of
+   ! boundary points on *every* side of the supplied domain. In the original
+   ! kernel this shell is implicit and only on two sides (e.g N and
+   ! E). Therefore, to allow the user to specify the same input as for
+   ! the original kernel while getting the same answers we must manually tweak
+   ! the dimensions we pass in to dl-esm-inf.
+   jpi = jpi + 1
    CALL get_environment_variable("JPJ", env)
    READ ( env, '(i10)' ) jpj
-   jpj_internal = jpj - 1
+   jpj = jpj + 1
    CALL get_environment_variable("JPK", env)
    READ ( env, '(i10)' ) jpk
    CALL get_environment_variable("IT", env)
@@ -102,7 +105,7 @@ PROGRAM tra_adv
    ! Pass the dimensions of the *internal* region to the initialisation
    ! routine so that we get the same values as used in the original
    ! version of the kernel.
-   call init_fields(jpi_internal,jpj_internal,jpk)
+   call init_fields()
 
    call timer_stop(init_timer)
 
@@ -149,10 +152,14 @@ PROGRAM tra_adv
 
 CONTAINS
 
-  subroutine init_fields(jpi, jpj, jpk)
-    integer,intent(in) :: jpi, jpj, jpk
+  subroutine init_fields()
+    integer  :: jpi, jpj, jpk
     REAL(wp) :: r
-    integer :: ji, jj, jk
+    integer  :: ji, jj, jk
+
+    jpi = mydomain%grid%simulation_domain%xstop
+    jpj = mydomain%grid%simulation_domain%xstop
+    jpk = mydomain%grid%nlevels
 
     ! Array initialization
     r = jpi*jpj*jpk
