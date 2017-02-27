@@ -2,6 +2,19 @@ module zwx2_kern_mod
 !
 implicit none
 !
+type, extends(kernel_type) :: zslpx_type
+  type(arg), dimension(5) :: meta_args = (/ &
+    arg(WRITE, 3D, CU), &
+    arg(READ,  3D, CT), &
+    arg(READ,  3D, CT, STENCIL(D)), &
+    arg(READ,  3D, CT, STENCIL(D)), &
+    arg(READ,  3D, CU, STENCIL(D)) /)
+  integer :: ITERATES_OVER = 3D
+  integer :: INDEX_OFFSET = OFFSET_NE
+contains
+  procedure, nopass :: code => zslpx_kern
+end type zslpx_type
+!        
 contains
   !
   subroutine zwx2_kern(zwx,pwn,mydomain,zind,zslpx,ji,jj,jk)

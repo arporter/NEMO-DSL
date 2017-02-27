@@ -2,6 +2,22 @@ module zwxy2_kern_mod
 !
 implicit none
 !
+type, extends(kernel_type) :: zwxy2_type
+  type(arg), dimension(8) :: meta_args = (/ &
+    arg(WRITE, 3D, CU), &
+    arg(WRITE, 3D, CV), &
+    arg(READ,  3D, CU), &
+    arg(READ,  3D, CV), &
+    arg(READ,  3D, CT, STENCIL(NE)), &
+    arg(READ,  3D, CT), &
+    arg(READ,  3D, CU, STENCIL(E)), &
+    arg(READ,  3D, CV, STENCIL(N)) /)
+  integer :: ITERATES_OVER = 3D
+  integer :: INDEX_OFFSET = OFFSET_NE
+contains
+  procedure, nopass :: code => zwxy2_kern
+end type zwxy2_type
+!
 contains
   !
   subroutine zwxy2_kern(zwx,zwy,pun,pvn,mydomain,zind,zslpx,zslpy,ji,jj,jk)

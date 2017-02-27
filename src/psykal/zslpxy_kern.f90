@@ -2,6 +2,18 @@ module zslpxy_kern_mod
 !
 implicit none
 !
+type, extends(kernel_type) :: zslpxy_type
+  type(arg), dimension(4) :: meta_args = (/ &
+    arg(WRITE, 3D, CU), &
+    arg(WRITE, 3D, CV), &
+    arg(READ,  3D, CU, STENCIL(W)), &
+    arg(READ,  3D, CV, STENCIL(S)) /)
+  integer :: ITERATES_OVER = 3D
+  integer :: INDEX_OFFSET = OFFSET_NE
+contains
+  procedure, nopass :: code => zslpxy_kern
+end type zslpxy_type
+!
 contains
   !
   subroutine zslpxy_kern(zslpx,zslpy,zwx,zwy,ji,jj,jk)

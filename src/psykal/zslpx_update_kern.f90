@@ -2,6 +2,16 @@ module zslpx_update_kern_mod
 !
 implicit none
 !
+type, extends(kernel_type) :: zslpx_update_type
+  type(arg), dimension(2) :: meta_args = (/ &
+    arg(READWRITE, 3D, CU), &
+    arg(READ,      3D, CU, STENCIL(U)) /)
+  integer :: ITERATES_OVER = 3D
+  integer :: INDEX_OFFSET = OFFSET_NE
+contains
+  procedure, nopass :: code => zslpx_update_kern
+end type zslpx_update_type
+!        
 contains
   !
   subroutine zslpx_update_kern(zslpx,zwx,ji,jj,jk)
