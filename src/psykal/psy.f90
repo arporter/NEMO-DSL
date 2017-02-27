@@ -46,8 +46,8 @@ contains
     jpi = grid%simulation_domain%xstop
     jpj = grid%simulation_domain%ystop
     jpk = grid%nlevels
-    write (*,*) jpi, jpj, jpk
 
+    ! T points
     DO jk = 1, jpk
       DO jj = 1, jpj
         DO ji = 1, jpi
@@ -57,18 +57,21 @@ contains
       END DO
     END DO
     !
+    ! Zero whole of bottom layer
     DO jj=1,jpj
       DO ji=1,jpi
         zwx%data(ji,jj,jpk) = 0.d0
       END DO
     END DO
     !
+    ! Zero whole of bottom layer
     DO jj=1,jpj
       DO ji=1,jpi
         zwy%data(ji,jj,jpk) = 0.d0
       END DO
     END DO
     !
+    ! U and V points
     DO jk = 1, jpk-1
       DO jj = 1, jpj-1
         DO ji = 1, jpi-1
@@ -78,18 +81,21 @@ contains
       END DO
     END DO
     !
+    ! Zero whole of bottom layer
     DO jj=1,jpj
       DO ji=1,jpi
         zslpx%data(ji,jj,jpk) = 0.d0
       END DO
     END DO
     !
+    ! Zero whole of bottom layer
     DO jj=1,jpj
       DO ji=1,jpi
         zslpy%data(ji,jj,jpk) = 0.d0
       END DO
     END DO
     !
+    ! Compute slopes at T point
     DO jk = 1, jpk-1
       DO jj = 2, jpj
         DO ji = 2, jpi
@@ -98,6 +104,7 @@ contains
       END DO
     END DO
     !
+    ! Update slopes at T point
     DO jk = 1, jpk-1
       DO jj = 2, jpj
         DO ji = 2, jpi

@@ -30,6 +30,7 @@ PROGRAM tra_adv
    REAL*8                                        :: zice, zu, z0u, zzwx, zv, z0v, zzwy, ztra, zalpha
    REAL*8                                        :: zw, z0w
    INTEGER                                       :: jpi, jpj, jpk, jt
+   INTEGER                                       :: jpi_internal, jpj_internal
    INTEGER*8                                     :: it
    CHARACTER(len=10)                             :: env
    !> Timer indexes, one for initialisation, one for the 'time-stepping'
@@ -41,8 +42,10 @@ PROGRAM tra_adv
 
    CALL get_environment_variable("JPI", env)
    READ ( env, '(i10)' ) jpi
+   jpi_internal = jpi - 1
    CALL get_environment_variable("JPJ", env)
    READ ( env, '(i10)' ) jpj
+   jpj_internal = jpj - 1
    CALL get_environment_variable("JPK", env)
    READ ( env, '(i10)' ) jpk
    CALL get_environment_variable("IT", env)
@@ -76,7 +79,6 @@ PROGRAM tra_adv
    !> Example tracer field (e.g. temperature or salinity)
    tsn = r3d_field(model_grid, T_POINTS)
    mydomain = r3d_field(model_grid, T_POINTS)
-   !> \todo Check that I've got the grid-point types right for these
    zwx = r3d_field(model_grid, U_POINTS)
    zwy = r3d_field(model_grid, V_POINTS)
    zslpx = r3d_field(model_grid, U_POINTS)
@@ -97,7 +99,10 @@ PROGRAM tra_adv
    upsmsk = r2d_field(model_grid, T_POINTS)
    tsn = r3d_field(model_grid, T_POINTS)
 
-   call init_fields()
+   ! Pass the dimensions of the *internal* region to the initialisation
+   ! routine so that we get the same values as used in the original
+   ! version of the kernel.
+   call init_fields(jpi_internal,jpj_internal,jpk)
 
    call timer_stop(init_timer)
 
@@ -144,7 +149,8 @@ PROGRAM tra_adv
 
 CONTAINS
 
-  subroutine init_fields()
+  subroutine init_fields(jpi, jpj, jpk)
+    integer,intent(in) :: jpi, jpj, jpk
     REAL(wp) :: r
     integer :: ji, jj, jk
 
@@ -165,6 +171,13 @@ CONTAINS
               pvn%data(ji,jj,jk) =ji*jj*jk/r
               pwn%data(ji,jj,jk) =ji*jj*jk/r
               tsn%data(ji,jj,jk)= ji*jj*jk/r
+              ! Set the mask values to match those in the original
+              ! benchmark harness. The t-mask values would normally
+              ! be read from file and then the values of the other
+              ! masks computed from them.
+              tsn%grid%tmask(ji,jj,jk) = ji*jj*jk/r
+              tsn%grid%umask(ji,jj,jk) = ji*jj*jk/r
+              tsn%grid%vmask(ji,jj,jk) = ji*jj*jk/r
           END DO
       END DO
    END DO
@@ -186,9 +199,17 @@ CONTAINS
 
   subroutine write_field(mydomain)
     type(r3d_field), intent(in) :: mydomain
+    ! Locals
     integer :: ji, jj, jk
+    integer :: jpi, jpj, jpk
+    character(len=30) :: fname
 
-    OPEN(unit = 24, file = 'output.dat', form='formatted')
+    jpi = mydomain%grid%simulation_domain%xstop
+    jpj = mydomain%grid%simulation_domain%ystop
+    jpk = mydomain%grid%nlevels
+
+    fname = 'output.dat'
+    OPEN(unit = 24, file=TRIM(fname), form='formatted')
   
     DO jk = 1, jpk-1
        DO jj = 2, jpj-1
