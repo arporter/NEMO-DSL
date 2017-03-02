@@ -1,33 +1,35 @@
 module zind_kern_mod
 !
+use kind_params_mod, only : wp
+!
 implicit none
 !
-type, extends(kernel_type) :: zind_type
-  type(arg), dimension(7) :: meta_args = (/ &
-    arg(WRITE, 3D, CT), &
-    arg(READ,  3D, CT), &
-    arg(READ,  2D, CT), &
-    arg(READ,  2D, CT), &
-    arg(READ,  1D    ), &
-    arg(READ,  2D, CT), &
-    arg(READ,  TMASK_3D) /)
-  integer :: ITERATES_OVER = 3D
-  integer :: INDEX_OFFSET = OFFSET_NE
-contains
-  procedure, nopass :: code => zind_kern
-end type zind_type
+!type, extends(kernel_type) :: zind_type
+!  type(arg), dimension(7) :: meta_args = (/ &
+!    arg(WRITE, DIMS(3), CT), &
+!    arg(READ,  DIMS(3), CT), &
+!    arg(READ,  DIMS(2), CT), &
+!    arg(READ,  DIMS(2), CT), &
+!    arg(READ,  DIMS(1)    ), &
+!    arg(READ,  DIMS(2), CT), &
+!    arg(READ,  GRID_MASK_T_3D) /)
+!  integer :: ITERATES_OVER = DIMS(3)
+!  integer :: INDEX_OFFSET = OFFSET_NE
+!contains
+!  procedure, nopass :: code => zind_kern
+!end type zind_type
 !        
 contains
   !
   subroutine zind_kern(zind,tsn,ztfreez,rnfmsk,rnfmsk_z,upsmsk,tmask,ji,jj,jk)
     !
-    real*8,  intent(out) :: zind(:,:,:)
-    real*8,  intent(in)  :: tsn(:,:,:)
-    real*8,  intent(in)  :: tmask(:,:,:)
-    real*8,  intent(in)  :: ztfreez(:,:), rnfmsk(:,:), rnfmsk_z(:), upsmsk(:,:)
+    real(wp),  intent(out) :: zind(:,:,:)
+    real(wp),  intent(in)  :: tsn(:,:,:)
+    real(wp),  intent(in)  :: tmask(:,:,:)
+    real(wp),  intent(in)  :: ztfreez(:,:), rnfmsk(:,:), rnfmsk_z(:), upsmsk(:,:)
     integer, intent(in) :: ji,jj,jk
     ! local variables
-    real*8 :: zice
+    real(wp) :: zice
     !
     IF( tsn(ji,jj,jk) <= ztfreez(ji,jj) + 0.1d0 ) THEN   ;   zice = 1.d0
     ELSE                                                 ;   zice = 0.d0
