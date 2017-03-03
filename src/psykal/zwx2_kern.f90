@@ -1,16 +1,31 @@
 module zwx2_kern_mod
 !
+use kind_params_mod, only : wp
+!
 implicit none
 !
+!type, extends(kernel_type) :: zslpx_type
+!  type(arg), dimension(5) :: meta_args = (/ &
+!    arg(WRITE, DIMS(3), CU), &
+!    arg(READ,  DIMS(3), CT), &
+!    arg(READ,  DIMS(3), CT, STENCIL(D)), &
+!    arg(READ,  DIMS(3), CT, STENCIL(D)), &
+!    arg(READ,  DIMS(3), CU, STENCIL(D)) /)
+!  integer :: ITERATES_OVER = DIMS(3)
+!  integer :: INDEX_OFFSET = OFFSET_NE
+!contains
+!  procedure, nopass :: code => zslpx_kern
+!end type zslpx_type
+!        
 contains
   !
   subroutine zwx2_kern(zwx,pwn,mydomain,zind,zslpx,ji,jj,jk)
     !
-    real*8, intent(out) :: zwx(:,:,:)
-    real*8, intent(in) :: pwn(:,:,:), mydomain(:,:,:), zind(:,:,:), zslpx(:,:,:)
+    real(wp), intent(out) :: zwx(:,:,:)
+    real(wp), intent(in) :: pwn(:,:,:), mydomain(:,:,:), zind(:,:,:), zslpx(:,:,:)
     integer, intent(in) :: ji,jj,jk
     ! local variables
-    real*8 :: z0w, zalpha, zw, zzwx, zzwy, zdt, zbtr
+    real(wp) :: z0w, zalpha, zw, zzwx, zzwy, zdt, zbtr
     !
     zdt = 1.d0
     zbtr = 1.d0
