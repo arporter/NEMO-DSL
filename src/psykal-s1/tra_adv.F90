@@ -6,7 +6,10 @@
    !!=====================================================================================
 PROGRAM tra_adv
    USE dl_timer, only: timer_init, timer_register, timer_start, timer_stop, timer_report
-   USE tra_adv_kern, only: init_3d_arrays, init_2d_arrays, init_1d_arrays, set_bounds
+   USE tra_adv_kern, only: init_3d_arrays, init_2d_arrays, init_1d_arrays, set_bounds, &
+        zind_compute, zero_bottom_layer, zwxy_compute, zslpxy_compute, &
+        zslpxy_update_compute, zwxy2_compute, mydomain_update_compute, zero_top_layer, &
+        zwx_compute, zslpx_compute
    REAL*8, ALLOCATABLE, SAVE, DIMENSION(:,:,:,:) :: t3sn, t3ns, t3ew, t3we
    REAL*8, ALLOCATABLE, SAVE, DIMENSION(:,:,:)   :: tsn 
    REAL*8, ALLOCATABLE, SAVE, DIMENSION(:,:,:)   :: pun, pvn, pwn
@@ -64,11 +67,8 @@ PROGRAM tra_adv
 ! arrays initialization
 
    call init_3d_arrays(umask, mydomain, pun, pvn, pwn, vmask, tsn, tmask)
-
    call init_2d_arrays(ztfreez, upsmsk, rnfmsk)
-
    call init_1d_arrays(rnfmsk_z)
-
    call timer_stop(init_timer)
 
 !***********************
@@ -77,111 +77,22 @@ PROGRAM tra_adv
    call timer_start(step_timer)
 
    DO jt = 1, it
-       DO jk = 1, jpk
-          DO jj = 1, jpj
-             DO ji = 1, jpi
-                IF( tsn(ji,jj,jk) <= ztfreez(ji,jj) + 0.1d0 ) THEN   ;   zice = 1.d0
-                ELSE                                                 ;   zice = 0.d0
-                ENDIF
-                zind(ji,jj,jk) = MAX (   &
-                   rnfmsk(ji,jj) * rnfmsk_z(jk),      & 
-                   upsmsk(ji,jj)               ,      &
-                   zice                               &
-                   &                  ) * tmask(ji,jj,jk)
-                   zind(ji,jj,jk) = 1 - zind(ji,jj,jk)
-             END DO
-          END DO
-       END DO
-
-       zwx(:,:,jpk) = 0.e0   ;   zwy(:,:,jpk) = 0.e0
-
-       DO jk = 1, jpk-1
-          DO jj = 1, jpj-1
-             DO ji = 1, jpi-1
-                 zwx(ji,jj,jk) = umask(ji,jj,jk) * ( mydomain(ji+1,jj,jk) - mydomain(ji,jj,jk) )
-                 zwy(ji,jj,jk) = vmask(ji,jj,jk) * ( mydomain(ji,jj+1,jk) - mydomain(ji,jj,jk) )
-             END DO
-          END DO
-       END DO
-
-       zslpx(:,:,jpk) = 0.e0   ;   zslpy(:,:,jpk) = 0.e0 
-
-       DO jk = 1, jpk-1
-         DO jj = 2, jpj
-            DO ji = 2, jpi 
-               zslpx(ji,jj,jk) =                    ( zwx(ji,jj,jk) + zwx(ji-1,jj  ,jk) )   &
-               &            * ( 0.25d0 + SIGN( 0.25d0, zwx(ji,jj,jk) * zwx(ji-1,jj  ,jk) ) )
-               zslpy(ji,jj,jk) =                    ( zwy(ji,jj,jk) + zwy(ji  ,jj-1,jk) )   &
-               &            * ( 0.25d0 + SIGN( 0.25d0, zwy(ji,jj,jk) * zwy(ji  ,jj-1,jk) ) )
-            END DO
-         END DO
-      END DO
-
-      DO jk = 1, jpk-1    
-         DO jj = 2, jpj
-            DO ji = 2, jpi
-               zslpx(ji,jj,jk) = SIGN( 1.d0, zslpx(ji,jj,jk) ) * MIN(    ABS( zslpx(ji  ,jj,jk) ),   &
-               &                                                2.d0*ABS( zwx  (ji-1,jj,jk) ),   &
-               &                                                2.d0*ABS( zwx  (ji  ,jj,jk) ) )
-               zslpy(ji,jj,jk) = SIGN( 1.d0, zslpy(ji,jj,jk) ) * MIN(    ABS( zslpy(ji,jj  ,jk) ),   &
-               &                                                2.d0*ABS( zwy  (ji,jj-1,jk) ),   &
-               &                                                2.d0*ABS( zwy  (ji,jj  ,jk) ) )
-            END DO
-         END DO
-      END DO 
-
-      DO jk = 1, jpk-1
-         zdt  = 1
-         DO jj = 2, jpj-1
-            DO ji = 2, jpi-1
-                z0u = SIGN( 0.5d0, pun(ji,jj,jk) )
-                zalpha = 0.5d0 - z0u
-                zu  = z0u - 0.5d0 * pun(ji,jj,jk) * zdt
-
-                zzwx = mydomain(ji+1,jj,jk) + zind(ji,jj,jk) * (zu * zslpx(ji+1,jj,jk))
-                zzwy = mydomain(ji  ,jj,jk) + zind(ji,jj,jk) * (zu * zslpx(ji  ,jj,jk))
-
-                zwx(ji,jj,jk) = pun(ji,jj,jk) * ( zalpha * zzwx + (1.-zalpha) * zzwy )
-                
-                z0v = SIGN( 0.5d0, pvn(ji,jj,jk) )
-                zalpha = 0.5d0 - z0v
-                zv  = z0v - 0.5d0 * pvn(ji,jj,jk) * zdt
-
-                zzwx = mydomain(ji,jj+1,jk) + zind(ji,jj,jk) * (zv * zslpy(ji,jj+1,jk))
-                zzwy = mydomain(ji,jj  ,jk) + zind(ji,jj,jk) * (zv * zslpy(ji,jj  ,jk))
-
-                zwy(ji,jj,jk) = pvn(ji,jj,jk) * ( zalpha * zzwx + (1.d0-zalpha) * zzwy )
-             END DO
-          END DO
-      END DO
-
-      DO jk = 1, jpk-1
-         DO jj = 2, jpj-1     
-            DO ji = 2, jpi-1
-               zbtr = 1.
-               ztra = - zbtr * ( zwx(ji,jj,jk) - zwx(ji-1,jj  ,jk  )   &
-               &               + zwy(ji,jj,jk) - zwy(ji  ,jj-1,jk  ) )
-               mydomain(ji,jj,jk) = mydomain(ji,jj,jk) + ztra
-            END DO
-         END DO
-      END DO
-
-      zwx (:,:, 1 ) = 0.e0    ;    zwx (:,:,jpk) = 0.e0
-
-      DO jk = 2, jpk-1   
-         zwx(:,:,jk) = tmask(:,:,jk) * ( mydomain(:,:,jk-1) - mydomain(:,:,jk) )
-      END DO
-
-      zslpx(:,:,1) = 0.e0
-
-      DO jk = 2, jpk-1    
-         DO jj = 1, jpj
-            DO ji = 1, jpi
-               zslpx(ji,jj,jk) =                    ( zwx(ji,jj,jk) + zwx(ji,jj,jk+1) )   &
-               &            * ( 0.25d0 + SIGN( 0.25d0, zwx(ji,jj,jk) * zwx(ji,jj,jk+1) ) )
-            END DO
-         END DO
-      END DO
+      
+      call zind_compute(zind,tsn,ztfreez,rnfmsk,rnfmsk_z,upsmsk,tmask)
+      call zero_bottom_layer(zwx)
+      call zero_bottom_layer(zwy)
+      call zwxy_compute(zwx,zwy,umask,vmask,mydomain)
+      call zero_bottom_layer(zslpx)
+      call zero_bottom_layer(zslpy)
+      call zslpxy_compute(zslpx,zslpy,zwx,zwy)
+      call zslpxy_update_compute(zslpx,zslpy,zwx,zwy)
+      call zwxy2_compute(zwx,zwy,pun,pvn,mydomain,zind,zslpx,zslpy)
+      call mydomain_update_compute(mydomain,zwx,zwy)
+      call zero_top_layer(zwx)
+      call zero_bottom_layer(zwx)
+      call zwx_compute(zwx,tmask,mydomain)
+      call zero_top_layer(zslpx)
+      call zslpx_compute(zslpx,zwx)
 
       DO jk = 2, jpk-1     
          DO jj = 1, jpj
