@@ -6,7 +6,8 @@ module tra_adv_kern
   public :: init_3d_arrays, init_2d_arrays, init_1d_arrays, set_bounds, zind_compute, &
        zero_bottom_layer, zwxy_compute, zslpxy_compute, zslpxy_update_compute, &
        zwxy2_compute, mydomain_update_compute, zero_top_layer, zwx_compute, &
-       zslpx_compute
+       zslpx_compute, zslpx_update_compute, multiply_top_layer, zwx2_compute, &
+       mydomain_compute
   !
   integer :: jpi,jpj,jpk
   integer :: ji,jj,jk
@@ -263,5 +264,80 @@ contains
     END DO
     !
   end subroutine zslpx_compute
+  !
+  subroutine zslpx_update_compute(zslpx,zwx)
+    !
+    real*8, intent(inout) :: zslpx(jpi,jpj,jpk)
+    real*8, intent(in)  :: zwx(jpi,jpj,jpk)
+    !
+    DO jk = 2, jpk-1     
+       DO jj = 1, jpj
+          DO ji = 1, jpi
+             zslpx(ji,jj,jk) = SIGN( 1.d0, zslpx(ji,jj,jk) ) * MIN( ABS( zslpx(ji,jj,jk  ) ), &
+                  &                                               2.d0*ABS( zwx  (ji,jj,jk+1) ),   &
+                  &                                               2.d0*ABS( zwx  (ji,jj,jk  ) )  )
+          END DO
+       END DO
+    END DO
+    !
+  end subroutine zslpx_update_compute
+  !
+  subroutine multiply_top_layer(field1,field2,field3)
+    !
+    real*8, intent(out) :: field1(jpi,jpj,jpk)
+    real*8, intent(in)  :: field2(jpi,jpj,jpk), field3(jpi,jpj,jpk)
+    !
+    DO jj = 1, jpj
+       DO ji = 1, jpi
+          field1(ji,jj,1) = field2(ji,jj,1) * field3(ji,jj,1)
+       END DO
+    END DO
+    !
+  end subroutine multiply_top_layer
+  !
+  subroutine zwx2_compute(zwx,pwn,mydomain,zind,zslpx)
+    !
+    real*8, intent(out) :: zwx(jpi,jpj,jpk)
+    real*8, intent(in), dimension(jpi,jpj,jpk)  :: pwn, mydomain, zind, zslpx
+    !
+    real*8 :: zdt, zbtr, z0w, zalpha, zw, zzwx, zzwy
+    !
+    zdt  = 1
+    zbtr = 1.
+    DO jk = 2, jpk
+       DO jj = 2, jpj-1     
+          DO ji = 2, jpi-1
+             z0w = SIGN( 0.5d0, pwn(ji,jj,jk) )
+             zalpha = 0.5d0 + z0w
+             zw  = z0w - 0.5d0 * pwn(ji,jj,jk) * zdt * zbtr
+             
+             zzwx = mydomain(ji,jj,jk  ) + zind(ji,jj,jk-1) * (zw * zslpx(ji,jj,jk  ))
+             zzwy = mydomain(ji,jj,jk-1) + zind(ji,jj,jk-1) * (zw * zslpx(ji,jj,jk-1))
+             
+             zwx(ji,jj,jk) = pwn(ji,jj,jk) * ( zalpha * zzwx + (1.-zalpha) * zzwy )
+          END DO
+       END DO
+    END DO
+    !
+  end subroutine zwx2_compute
+  !
+  subroutine mydomain_compute(mydomain,zwx)
+    !
+    real*8, intent(out) :: mydomain(jpi,jpj,jpk)
+    real*8, intent(in)  :: zwx(jpi,jpj,jpk)
+    !
+    real*8 :: zbtr, ztra
+    !
+    zbtr = 1.
+    DO jk = 1, jpk-1
+       DO jj = 2, jpj-1     
+          DO ji = 2, jpi-1
+             ztra = - zbtr * ( zwx(ji,jj,jk) - zwx(ji,jj,jk+1) )
+             mydomain(ji,jj,jk) = ztra
+          END DO
+       END DO
+    END DO
+    !
+  end subroutine mydomain_compute
   !
 end module tra_adv_kern

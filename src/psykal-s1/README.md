@@ -1,7 +1,9 @@
 # README #
 
-This directory contains the 'original' tra_adv benchmark as extracted from
-the NEMO source code by CMCC.
+This directory contains the 'PSyKAl step 1' version of the tra_adv
+benchmark as extracted from the NEMO source code by CMCC. The step 1
+version makes as few changes to the source code as possible whilst
+being able to generate OpenMP and OpenACC parallel code.
 
 ## Building ##
 
@@ -17,15 +19,11 @@ environment variables:
 
 * F90      - the command with which to invoke the Fortran compiler
 * F90FLAGS - flags to pass to the compiler, e.g. -g
-* OMPFLAGS - the flag(s) required to enable OpenMP with the chosen compiler
-             (if desired)
 
 e.g. to build with Gnu Fortran I use:
 
     export F90=gfortran
     export F90FLAGS=-O3
-    (export OMPFLAGS=-fopenmp)
-    export MPIF90=mpif90
 
 ## Running ##
 

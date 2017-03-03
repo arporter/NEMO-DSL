@@ -9,7 +9,8 @@ PROGRAM tra_adv
    USE tra_adv_kern, only: init_3d_arrays, init_2d_arrays, init_1d_arrays, set_bounds, &
         zind_compute, zero_bottom_layer, zwxy_compute, zslpxy_compute, &
         zslpxy_update_compute, zwxy2_compute, mydomain_update_compute, zero_top_layer, &
-        zwx_compute, zslpx_compute
+        zwx_compute, zslpx_compute, zslpx_update_compute, multiply_top_layer, &
+        zwx2_compute, mydomain_compute
    REAL*8, ALLOCATABLE, SAVE, DIMENSION(:,:,:,:) :: t3sn, t3ns, t3ew, t3we
    REAL*8, ALLOCATABLE, SAVE, DIMENSION(:,:,:)   :: tsn 
    REAL*8, ALLOCATABLE, SAVE, DIMENSION(:,:,:)   :: pun, pvn, pwn
@@ -93,79 +94,45 @@ PROGRAM tra_adv
       call zwx_compute(zwx,tmask,mydomain)
       call zero_top_layer(zslpx)
       call zslpx_compute(zslpx,zwx)
+      call zslpx_update_compute(zslpx,zwx)
+      call multiply_top_layer(zwx,pwn,mydomain)
+      call zwx2_compute(zwx,pwn,mydomain,zind,zslpx)
+      call mydomain_compute(mydomain,zwx)
 
-      DO jk = 2, jpk-1     
-         DO jj = 1, jpj
-            DO ji = 1, jpi
-               zslpx(ji,jj,jk) = SIGN( 1.d0, zslpx(ji,jj,jk) ) * MIN( ABS( zslpx(ji,jj,jk  ) ), &
-               &                                               2.d0*ABS( zwx  (ji,jj,jk+1) ),   &
-               &                                               2.d0*ABS( zwx  (ji,jj,jk  ) )  )
-            END DO
-         END DO
-      END DO
+   END DO
 
-      zwx(:,:, 1 ) = pwn(:,:,1) * mydomain(:,:,1)
-
-      zdt  = 1
-      zbtr = 1.
-      DO jk = 1, jpk-1
-         DO jj = 2, jpj-1     
-            DO ji = 2, jpi-1
-               z0w = SIGN( 0.5d0, pwn(ji,jj,jk+1) )
-               zalpha = 0.5d0 + z0w
-               zw  = z0w - 0.5d0 * pwn(ji,jj,jk+1) * zdt * zbtr
-
-               zzwx = mydomain(ji,jj,jk+1) + zind(ji,jj,jk) * (zw * zslpx(ji,jj,jk+1))
-               zzwy = mydomain(ji,jj,jk  ) + zind(ji,jj,jk) * (zw * zslpx(ji,jj,jk  ))
-
-               zwx(ji,jj,jk+1) = pwn(ji,jj,jk+1) * ( zalpha * zzwx + (1.-zalpha) * zzwy )
-            END DO
-         END DO
-      END DO
-
-      zbtr = 1.
-      DO jk = 1, jpk-1
-         DO jj = 2, jpj-1     
-            DO ji = 2, jpi-1
-               ztra = - zbtr * ( zwx(ji,jj,jk) - zwx(ji,jj,jk+1) )
-               mydomain(ji,jj,jk) = ztra
-            END DO
-         END DO
-      END DO
-  END DO
-
-  call timer_stop(step_timer)
-
-  OPEN(unit = 4, file = 'output.dat', form='formatted')
+   call timer_stop(step_timer)
   
-  DO jk = 1, jpk-1
-     DO jj = 2, jpj-1
-        DO ji = 2, jpi-1
-           write(4,*) mydomain(ji,jj,jk)
-        END DO
-     END DO
-  END DO
+   OPEN(unit = 4, file = 'output.dat', form='formatted')
+  
+   DO jk = 1, jpk-1
+      DO jj = 2, jpj-1
+         DO ji = 2, jpi-1
+            write(4,*) mydomain(ji,jj,jk)
+         END DO
+      END DO
+   END DO
+  
+   CLOSE(4)
 
-  CLOSE(4)
+   DEALLOCATE( mydomain )
+   DEALLOCATE( zwx )
+   DEALLOCATE( zwy )
+   DEALLOCATE( zslpx )
+   DEALLOCATE( zslpy )
+   DEALLOCATE( pun )
+   DEALLOCATE( pvn )
+   DEALLOCATE( pwn )
+   DEALLOCATE( umask)
+   DEALLOCATE( vmask)
+   DEALLOCATE( tmask)
+   DEALLOCATE( zind )
+   DEALLOCATE( ztfreez )
+   DEALLOCATE( rnfmsk)
+   DEALLOCATE( upsmsk)
+   DEALLOCATE( rnfmsk_z)
+   DEALLOCATE( tsn)
 
-  DEALLOCATE( mydomain )
-  DEALLOCATE( zwx )
-  DEALLOCATE( zwy )
-  DEALLOCATE( zslpx )
-  DEALLOCATE( zslpy )
-  DEALLOCATE( pun )
-  DEALLOCATE( pvn )
-  DEALLOCATE( pwn )
-  DEALLOCATE( umask)
-  DEALLOCATE( vmask)
-  DEALLOCATE( tmask)
-  DEALLOCATE( zind )
-  DEALLOCATE( ztfreez )
-  DEALLOCATE( rnfmsk)
-  DEALLOCATE( upsmsk)
-  DEALLOCATE( rnfmsk_z)
-  DEALLOCATE( tsn)
-
-  CALL timer_report()
+   CALL timer_report()
 
 END PROGRAM tra_adv

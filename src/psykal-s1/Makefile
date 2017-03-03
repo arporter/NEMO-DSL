@@ -5,18 +5,16 @@
 #
 #   export F90=gfortran
 #   export F90FLAGS=-O3
-#   export OMPFLAGS=-fopenmp
-#   export MPIF90=mpif90
 
 all: tra_adv.exe
 
 # Location of the dl_timer code
 TIMER_DIR = ../shared/dl_timer
 
-FORT_FLAGS = ${F90FLAGS} ${OMPFLAGS} -I${TIMER_DIR}/src
+FORT_FLAGS = ${F90FLAGS} -I${TIMER_DIR}/src
 
 tra_adv.exe: timer_lib tra_adv_kern.o tra_adv.o
-	${F90} ${OMPFLAGS} -o $@ tra_adv_kern.o tra_adv.o ${TIMER_DIR}/dl_timer_lib.a
+	${F90} -o $@ tra_adv_kern.o tra_adv.o ${TIMER_DIR}/dl_timer_lib.a
 
 %.o: %.f90
 	${F90} ${FORT_FLAGS} -c $<
@@ -29,4 +27,5 @@ timer_lib:
 clean:
 	rm -f *.o
 	rm -f *~
+	rm -f *.mod
 	rm -f tra_adv.exe
