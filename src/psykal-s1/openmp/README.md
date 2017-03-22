@@ -19,12 +19,12 @@ The compiler and compiler flags to use must be set through the following
 environment variables:
 
 * F90      - the command with which to invoke the Fortran compiler
-* F90FLAGS - flags to pass to the compiler, e.g. -g
+* F90FLAGS - flags to pass to the compiler, e.g. -g -fopenmp
 
 e.g. to build with Gnu Fortran I use:
 
     export F90=gfortran
-    export F90FLAGS=-O3
+    export F90FLAGS="-O3 -fopenmp"
 
 ## Running ##
 

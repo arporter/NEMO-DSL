@@ -4,7 +4,7 @@
 # environment variables:
 #
 #   export F90=gfortran
-#   export F90FLAGS=-O3
+#   export F90FLAGS="-O3 -openmp"
 
 all: tra_adv.exe
 
@@ -14,7 +14,8 @@ TIMER_DIR = ../../shared/dl_timer
 FORT_FLAGS = ${F90FLAGS} -I${TIMER_DIR}/src
 
 tra_adv.exe: timer_lib tra_adv_kern.o tra_adv.o
-	${F90} -o $@ tra_adv_kern.o tra_adv.o ${TIMER_DIR}/dl_timer_lib.a
+	${F90} ${F90FLAGS} -o $@ tra_adv_kern.o tra_adv.o \
+        ${TIMER_DIR}/dl_timer_lib.a
 
 %.o: %.f90
 	${F90} ${FORT_FLAGS} -c $<
