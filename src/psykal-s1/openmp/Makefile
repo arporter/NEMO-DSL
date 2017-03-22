@@ -1,4 +1,4 @@
-# Makefile for the original form of the tra_adv benchmark.
+# Makefile for the serial, psykal form of the tra_adv benchmark.
 
 # Compiler and associated flags must be set through the following
 # environment variables:
@@ -9,7 +9,7 @@
 all: tra_adv.exe
 
 # Location of the dl_timer code
-TIMER_DIR = ../shared/dl_timer
+TIMER_DIR = ../../shared/dl_timer
 
 FORT_FLAGS = ${F90FLAGS} -I${TIMER_DIR}/src
 
