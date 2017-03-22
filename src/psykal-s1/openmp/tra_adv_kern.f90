@@ -26,11 +26,15 @@ contains
   !
   subroutine init_3d_arrays(umask, mydomain, pun, pvn, pwn, vmask, tsn, tmask)
     !
-    real*8, intent(out), dimension(jpi,jpj,jpk) :: umask, mydomain, pun, pvn, pwn, vmask, tsn, tmask
+    real*8, intent(out), dimension(jpi,jpj,jpk) :: umask, mydomain, pun, &
+         pvn, pwn, vmask, tsn, tmask
     !
     real*8 :: r
     !
     r = jpi*jpj*jpk
+    !$omp parallel do default(none), private(ji, jj, jk), &
+    !$omp shared(jpi, jpj, jpk, r, umask, mydomain, pun, pvn, pwn, vmask, &
+    !$omp tsn, tmask)
     DO jk = 1, jpk
        DO jj = 1, jpj
           DO ji = 1, jpi
@@ -45,6 +49,7 @@ contains
           END DO
        END DO
     END DO
+!$omp end parallel do
     !
   end subroutine init_3d_arrays
   !
@@ -55,6 +60,8 @@ contains
     real*8 :: r
     !
     r = jpi*jpj
+    !$omp parallel do default(none), private(ji, jj, jk), &
+    !$omp shared(jpi, jpj, r, ztfreez, upsmsk, rnfmsk)
     DO jj=1, jpj
        DO ji=1, jpi
           ztfreez(ji,jj) = ji*jj/r
@@ -62,6 +69,7 @@ contains
           rnfmsk(ji,jj) = ji*jj/r
        END DO
     END DO
+    !$omp end parallel do
     !
   end subroutine init_2d_arrays
   !
@@ -84,6 +92,8 @@ contains
     !
     real*8 :: zice
     !
+    !$omp parallel do default(none), private(ji, jj, jk, zice), &
+    !$omp shared(jpi, jpj, jpk, tmask, rnfmsk, rnfmsk_z, upsmsk, tsn, ztfreez, zind)
     DO jk = 1, jpk
        DO jj = 1, jpj
           DO ji = 1, jpi
@@ -99,6 +109,7 @@ contains
           END DO
        END DO
     END DO
+    !$omp end parallel do
     !
   end subroutine zind_compute
   !
@@ -117,8 +128,11 @@ contains
   subroutine zwxy_compute(zwx,zwy,umask,vmask,mydomain)
     !
     real*8, intent(out) :: zwx(jpi,jpj,jpk), zwy(jpi,jpj,jpk)
-    real*8, intent(in) :: umask(jpi,jpj,jpk), vmask(jpi,jpj,jpk), mydomain(jpi,jpj,jpk)
+    real*8, intent(in) :: umask(jpi,jpj,jpk), vmask(jpi,jpj,jpk), &
+                          mydomain(jpi,jpj,jpk)
     !
+    !$omp parallel do default(none), private(ji, jj, jk), &
+    !$omp shared(jpi, jpj, jpk, umask, vmask, mydomain, zwx, zwy)
     DO jk = 1, jpk-1
        DO jj = 1, jpj-1
           DO ji = 1, jpi-1
@@ -127,6 +141,7 @@ contains
           END DO
        END DO
     END DO
+    !$omp end parallel do
     !
   end subroutine zwxy_compute
   !
@@ -135,16 +150,19 @@ contains
     real*8, intent(out) :: zslpx(jpi,jpj,jpk), zslpy(jpi,jpj,jpk)
     real*8, intent(in) :: zwx(jpi,jpj,jpk), zwy(jpi,jpj,jpk)
     !
+    !$omp parallel do default(none), private(ji, jj, jk), &
+    !$omp shared(jpi, jpj, jpk, zwx, zwy, zslpx, zslpy)
     DO jk = 1, jpk-1
        DO jj = 2, jpj
           DO ji = 2, jpi 
-             zslpx(ji,jj,jk) =                    ( zwx(ji,jj,jk) + zwx(ji-1,jj  ,jk) )   &
+             zslpx(ji,jj,jk) = ( zwx(ji,jj,jk) + zwx(ji-1,jj  ,jk) )   &
                   &            * ( 0.25d0 + SIGN( 0.25d0, zwx(ji,jj,jk) * zwx(ji-1,jj  ,jk) ) )
-             zslpy(ji,jj,jk) =                    ( zwy(ji,jj,jk) + zwy(ji  ,jj-1,jk) )   &
+             zslpy(ji,jj,jk) = ( zwy(ji,jj,jk) + zwy(ji  ,jj-1,jk) )   &
                   &            * ( 0.25d0 + SIGN( 0.25d0, zwy(ji,jj,jk) * zwy(ji  ,jj-1,jk) ) )
           END DO
        END DO
     END DO
+    !$omp end parallel do
     !
   end subroutine zslpxy_compute
   !
@@ -153,6 +171,8 @@ contains
     real*8, intent(inout) :: zslpx(jpi,jpj,jpk), zslpy(jpi,jpj,jpk)
     real*8, intent(in) :: zwx(jpi,jpj,jpk), zwy(jpi,jpj,jpk)
     !
+    !$omp parallel do default(none), private(ji, jj, jk), &
+    !$omp shared(jpi, jpj, jpk, zwx, zwy, zslpx, zslpy)
     DO jk = 1, jpk-1    
        DO jj = 2, jpj
           DO ji = 2, jpi
@@ -165,6 +185,7 @@ contains
           END DO
        END DO
     END DO
+    !$omp end parallel do
     !
   end subroutine zslpxy_update_compute
   !
@@ -175,6 +196,9 @@ contains
     !
     real*8 :: zdt, z0u, zalpha, zu, zzwx, zzwy, z0v, zv
     !
+    !$omp parallel do default(none), private(ji, jj, jk, zdt, z0u, z0v, &
+    !$omp zu, zv, zalpha, zzwx, zzwy), shared(jpi, jpj, jpk, zslpx, zslpy, &
+    !$omp zind, mydomain, pun, pvn, zwx, zwy)
     DO jk = 1, jpk-1
        zdt  = 1
        DO jj = 2, jpj-1
@@ -199,6 +223,7 @@ contains
           END DO
        END DO
     END DO
+    !$omp end parallel do
     !
   end subroutine zwxy2_compute
   !
@@ -209,6 +234,8 @@ contains
     !
     real*8 :: zbtr, ztra
     !
+    !$omp parallel do default(none), private(ji, jj, jk, zbtr, ztra), &
+    !$omp shared(jpi, jpj, jpk, zwx, zwy, mydomain)
     DO jk = 1, jpk-1
        DO jj = 2, jpj-1     
           DO ji = 2, jpi-1
@@ -219,6 +246,7 @@ contains
           END DO
        END DO
     END DO
+    !$omp end parallel do
     !
   end subroutine mydomain_update_compute
   !
