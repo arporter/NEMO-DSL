@@ -6,7 +6,7 @@
 #   export F90=gfortran
 #   export F90FLAGS="-O3 -openmp"
 
-all: tra_adv.exe
+all: tra_adv.exe tra_adv_tiled.exe
 
 # Location of the dl_timer code
 TIMER_DIR = ../../shared/dl_timer
@@ -15,6 +15,10 @@ FORT_FLAGS = ${F90FLAGS} -I${TIMER_DIR}/src
 
 tra_adv.exe: timer_lib tra_adv_kern.o tra_adv.o
 	${F90} ${F90FLAGS} -o $@ tra_adv_kern.o tra_adv.o \
+        ${TIMER_DIR}/dl_timer_lib.a
+
+tra_adv_tiled.exe: timer_lib tra_adv_kern_tiled.o tra_adv.o
+	${F90} ${F90FLAGS} -o $@ tra_adv_kern_tiled.o tra_adv.o \
         ${TIMER_DIR}/dl_timer_lib.a
 
 %.o: %.f90
